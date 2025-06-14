@@ -14,12 +14,12 @@ import {
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
-import ChatNode from "./ChatNode";
+import {FileInputNode, ImageInputNode, TextInputNode} from "./chatnode";
 
 const initialNodes = [
 	{
 		id: "1",
-		type: "chatNode",
+		type: "textInputNode",
 		position: { x: 100, y: 100 },
 		data: {
 			input: "Hello, this is the input text",
@@ -28,13 +28,23 @@ const initialNodes = [
 	},
 	{
 		id: "2",
-		type: "chatNode",
+		type: "imageInputNode",
 		position: { x: 500, y: 300 },
 		data: {
 			input: "Another chat node",
 			output: "With different content",
 		},
 	},
+	{
+		id: "3",
+		type: "fileInputNode",
+		position: { x: 300, y: 500 },
+		data: {
+			input: "Another chat node",
+			output: "With different content",
+		},
+	},
+
 ];
 const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
 
@@ -45,7 +55,9 @@ export default function App() {
 	// Define custom node types - memoized to prevent re-renders
 	const nodeTypes = useMemo(
 		() => ({
-			chatNode: ChatNode,
+			fileInputNode: FileInputNode,
+			imageInputNode: ImageInputNode,
+			textInputNode: TextInputNode,
 		}),
 		[],
 	);
