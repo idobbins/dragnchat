@@ -1,3 +1,11 @@
+import {
+	SignInButton,
+	SignUpButton,
+	SignedIn,
+	SignedOut,
+	UserButton,
+} from "@clerk/nextjs";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	Breadcrumb,
@@ -44,13 +52,18 @@ export default async function Home() {
 				<Breadcrumb>
 					<BreadcrumbList>
 						<BreadcrumbItem>
-							<BreadcrumbLink href="/" className="text-foreground pointer-events-auto">
+							<BreadcrumbLink
+								href="/"
+								className="text-foreground pointer-events-auto"
+							>
 								<Flame />
 							</BreadcrumbLink>
 						</BreadcrumbItem>
 						<BreadcrumbSeparator className="text-foreground pointer-events-auto" />
 						<BreadcrumbItem className="text-foreground">
-							<div className="hover:cursor-default pointer-events-auto">Project 1</div>
+							<div className="hover:cursor-default pointer-events-auto">
+								Project 1
+							</div>
 							<ChevronsUpDown className="w-4 h-4 hover:cursor-pointer pointer-events-auto" />
 						</BreadcrumbItem>
 					</BreadcrumbList>
@@ -77,9 +90,15 @@ export default async function Home() {
 							<DropdownMenuSeparator />
 							<DropdownMenuItem>Settings</DropdownMenuItem>
 							<DropdownMenuItem className="focus:bg-white">
-								<Button variant="destructive" className="w-full">
-									Sign Out
-								</Button>
+								<SignedOut>
+									<SignInButton />
+								</SignedOut>
+								<SignedIn>
+									<UserButton />
+								</SignedIn>
+								{/* <Button variant="destructive" className="w-full"> */}
+								{/* Sign Out */}
+								{/* </Button> */}
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>

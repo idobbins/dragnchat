@@ -17,23 +17,23 @@ import "@xyflow/react/dist/style.css";
 import ChatNode from "./ChatNode";
 
 const initialNodes = [
-	{ 
-		id: "1", 
+	{
+		id: "1",
 		type: "chatNode",
-		position: { x: 100, y: 100 }, 
-		data: { 
+		position: { x: 100, y: 100 },
+		data: {
 			input: "Hello, this is the input text",
-			output: "This is the generated output"
-		} 
+			output: "This is the generated output",
+		},
 	},
-	{ 
-		id: "2", 
+	{
+		id: "2",
 		type: "chatNode",
-		position: { x: 500, y: 300 }, 
-		data: { 
+		position: { x: 500, y: 300 },
+		data: {
 			input: "Another chat node",
-			output: "With different content"
-		} 
+			output: "With different content",
+		},
 	},
 ];
 const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
@@ -43,9 +43,12 @@ export default function App() {
 	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
 	// Define custom node types - memoized to prevent re-renders
-	const nodeTypes = useMemo(() => ({
-		chatNode: ChatNode,
-	}), []);
+	const nodeTypes = useMemo(
+		() => ({
+			chatNode: ChatNode,
+		}),
+		[],
+	);
 
 	const onConnect = useCallback(
 		(params: Connection) => setEdges((eds) => addEdge(params, eds)),

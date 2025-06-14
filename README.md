@@ -9,10 +9,10 @@ Open source 'drag n drop' chat with graph-based context.
 - [x] setup: Vercel initial deploy (currently not connected to domain)
 - [x] install: Shadcn
 - [x] setup: Database
-- [ ] remove: database schema (dont want to store all this sensitive user data)
+- [x] remove: database schema (dont want to store all this sensitive user data)
 - [ ] setup: UploadThing
-- [ ] remove: NextAuth
-- [ ] setup: Clerk application
+- [x] remove: NextAuth
+- [x] setup: Clerk application
 - [x] scaffold: User Avatar
 - [ ] scaffold: User Info section, custom clerk component
 - [x] scaffold: Active project breadcrumb
