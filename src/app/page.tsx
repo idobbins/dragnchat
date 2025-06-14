@@ -48,7 +48,7 @@ import {
 	SquarePlus,
 } from "lucide-react";
 
-import Editor from "./_components/editor";
+import Editor from "@/app/_components/editor";
 
 const initialNodes = [
 	{ id: "1", position: { x: 0, y: 0 }, data: { label: "1" } },
