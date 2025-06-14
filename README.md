@@ -4,41 +4,35 @@ Open source 'drag n drop' chat with graph-based context.
 
 ## TODO
 
-- [ ] Deployment
-    - [x] Remove extra stuff I dont need.
-    - [x] Vercel setup
-        - [x] Project setup
-        - [x] Domain setup
-    - [ ] Database setup
-    - [ ] Tidy up build process (reference what Theo does)
-- [ ] UI
-    - [x] Setup shadcn
-    - [ ] Scaffold
-        - [x] Header (likely just an avatar that is top-4 right-4)
-        - [x] User Profile Dropdown (just logout and login based on state for now. clerk is tempting for the <SignedIn /> and <SignedOut /> components)
-        - [ ] Project Selector (Probably a dialogue, i might try breadcrumbs with a dropdown actually)
-        - [ ] Chat graph node
-        - [ ] node connection
-    - [ ] Live (database attached)
-        - [ ] User login and auth
-        - [ ] Connection to projects view
-        - [ ] Active project chat information
-- [ ] Auth
-    - [x] Remove discord auth
-    - [ ] Google Auth if I can get the oauth approved in time, this may be a reason to use clerk.
-- [ ] OpenRouter API client (Bring your own key is all we support)
-    - [ ] Store user api key in db
-    - [ ] Async task execution queue, no chron though
-    - [ ] Different model support
-
-## Misc - will do
-
-- [ ] Ratelimiting (upstash? or something else free?)
-- [ ] "taint" (server-only package, look into this)
-
-## Misc - probably not
-
-- [ ] Use Next/Image component (debating this, probably dont need)
-- [ ] Error management (w/ Sentry)
-- [ ] Parallel route for projects?
-- [ ] Analytics (posthog)
+- [x] setup: Vercel project
+- [x] setup: Vercel domain 
+- [x] setup: Vercel initial deploy (currently not connected to domain)
+- [x] install: Shadcn
+- [ ] setup: Database
+- [ ] remove: database schema (dont want to store all this sensitive user data)
+- [ ] setup: UploadThing
+- [ ] remove: NextAuth
+- [ ] setup: Clerk application
+- [x] scaffold: User Avatar
+- [ ] scaffold: User Info section, custom clerk component
+- [x] scaffold: Active project breadcrumb
+- [ ] scaffold: Project selector dropdown 
+- [ ] scaffold: Project management ui (within Project selector dropdown for now)
+- [ ] scaffold: New Project button
+- [x] setup: React Flow
+- [x] scaffold: Basic Drag N Drop components
+- [ ] plan: Basic supported node types
+- [ ] scaffold: Nodes
+- [ ] scaffold: Node inspector ui for supported nodes
+- [ ] setup: OpenRouter integration
+- [ ] scaffold: Bring your own key input field (probably in user profile section)
+- [ ] scaffold: OpenRouter selector UI (this may be part of the supported node types, we will see)
+- [ ] plan: Required AppRouter routes
+- [ ] plan: Required datbase schema
+- [ ] plan: Required trpc routes
+- [ ] plan: async task execution, no chron allowed
+- [ ] plan: graph cycle detection
+- [ ] setup: upstash rate limiting
+- [ ] setup: react taint (pending need)
+- [ ] setup: sentry error reporting (time depending)
+- [ ] setup: posthog (time depending)
