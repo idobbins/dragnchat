@@ -20,10 +20,10 @@ export default function ChatNode({ data, isConnectable }: NodeProps) {
 				type="target"
 				position={Position.Left}
 				isConnectable={isConnectable}
-				className="w-32 h-32 !bg-blue-500 border-2 border-white"
+				className=" !bg-blue-500 border-2 border-white"
 			/>
 
-			<Card className="w-96 h-96 shadow-lg">
+			<Card className="shadow-lg">
 				<CardContent className="flex flex-col h-full p-0">
 					<div className="flex-1 w-full p-4 flex items-center justify-center">
 						<div className="text-center">

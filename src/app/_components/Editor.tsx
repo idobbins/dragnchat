@@ -67,7 +67,6 @@ export default function App() {
 				fitView
 			>
 				<Controls />
-				<MiniMap />
 				<Background variant={BackgroundVariant.Dots} gap={12} size={1} />
 			</ReactFlow>
 		</div>
