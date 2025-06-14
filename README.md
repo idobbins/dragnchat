@@ -8,7 +8,7 @@ Open source 'drag n drop' chat with graph-based context.
 - [x] setup: Vercel domain 
 - [x] setup: Vercel initial deploy (currently not connected to domain)
 - [x] install: Shadcn
-- [ ] setup: Database
+- [x] setup: Database
 - [ ] remove: database schema (dont want to store all this sensitive user data)
 - [ ] setup: UploadThing
 - [ ] remove: NextAuth
