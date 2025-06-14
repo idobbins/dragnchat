@@ -25,34 +25,42 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator"
+import { Separator } from "@/components/ui/separator";
 
 import { ChevronsUpDown, Flame, SquarePlus } from "lucide-react";
+
+import Editor from "./_components/Editor";
+
+const initialNodes = [
+	{ id: "1", position: { x: 0, y: 0 }, data: { label: "1" } },
+	{ id: "2", position: { x: 0, y: 100 }, data: { label: "2" } },
+];
+const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
 
 export default async function Home() {
 	return (
 		<main className="flex bg-none w-screen h-screen flex-col">
-			<div className="flex items-center justify-between p-4">
+			<div className="flex items-center justify-between p-4 z-10 pointer-events-none">
 				<Breadcrumb>
 					<BreadcrumbList>
 						<BreadcrumbItem>
-							<BreadcrumbLink href="/" className="text-foreground">
+							<BreadcrumbLink href="/" className="text-foreground pointer-events-auto">
 								<Flame />
 							</BreadcrumbLink>
 						</BreadcrumbItem>
-						<BreadcrumbSeparator className="text-foreground" />
+						<BreadcrumbSeparator className="text-foreground pointer-events-auto" />
 						<BreadcrumbItem className="text-foreground">
-							<div className="hover:cursor-default">Project 1</div>
-							<ChevronsUpDown className="w-4 h-4 hover:cursor-pointer" />
+							<div className="hover:cursor-default pointer-events-auto">Project 1</div>
+							<ChevronsUpDown className="w-4 h-4 hover:cursor-pointer pointer-events-auto" />
 						</BreadcrumbItem>
 					</BreadcrumbList>
 				</Breadcrumb>
 				<div className="flex items-center gap-4">
-					<Button>
+					<Button className="pointer-events-auto">
 						New Chat <SquarePlus />
 					</Button>
 					<DropdownMenu>
-						<DropdownMenuTrigger>
+						<DropdownMenuTrigger className="pointer-events-auto">
 							<Avatar>
 								<AvatarImage src="https://github.com/shadcn.png" />
 								<AvatarFallback>CN</AvatarFallback>
@@ -77,15 +85,16 @@ export default async function Home() {
 					</DropdownMenu>
 				</div>
 			</div>
-			<div className="flex-1 flex w-screen h-screen bg-gray-50 absolute top-0 left-0 -z-10">
-				<Card className="w-96 h-96 relative top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+			{/* <div className="flex-1 flex w-screen h-screen bg-gray-50 absolute top-0 left-0 -z-10 pointer-events-none"> */}
+			{/* <Card className="w-96 h-96 relative top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
 					<CardContent className="flex flex-col items-center justify-center h-full">
 						<div className="flex-1 w-full">Input</div>
 						<Separator />
 						<div className="flex-1 w-full">Output</div>
-					</CardContent>
-				</Card>
-			</div>
+					</CardContent> */}
+			{/* </Card> */}
+			<Editor />
+			{/* </div> */}
 		</main>
 	);
 }
