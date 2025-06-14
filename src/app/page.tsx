@@ -6,7 +6,7 @@ import {
 	SignedIn,
 	SignedOut,
 	UserButton,
-	useAuth
+	useAuth,
 } from "@clerk/nextjs";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,9 +36,17 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { IconBrandGoogleFilled } from '@tabler/icons-react';
-import { ChevronsUpDown, Flame, MessageCirclePlus, SquarePlus } from "lucide-react";
+import { IconBrandGoogleFilled } from "@tabler/icons-react";
+import {
+	ArrowRight,
+	ChevronsUpDown,
+	Flame,
+	MessageCirclePlus,
+	Search,
+	SquarePlus,
+} from "lucide-react";
 
 import Editor from "./_components/Editor";
 
@@ -49,7 +57,7 @@ const initialNodes = [
 const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
 
 export default function Home() {
-  	const { isLoaded, isSignedIn, userId, sessionId, getToken } = useAuth()
+	const { isLoaded, isSignedIn, userId, sessionId, getToken } = useAuth();
 
 	return (
 		<main className="flex bg-none w-screen h-screen flex-col">
@@ -69,22 +77,59 @@ export default function Home() {
 							<div className="hover:cursor-default pointer-events-auto text-lg">
 								{isSignedIn ? "Project 1" : "Demo"}
 							</div>
-							<ChevronsUpDown className="w-4 h-4 hover:cursor-pointer pointer-events-auto" />
+							<DropdownMenu>
+								<DropdownMenuTrigger>
+									<ChevronsUpDown className="w-4 h-4 hover:cursor-pointer pointer-events-auto" />
+								</DropdownMenuTrigger>
+								<DropdownMenuContent
+									align="start"
+									alignOffset={8}
+									side="bottom"
+									sideOffset={8}
+									className="bg-white shadow-lg rounded-md w-96"
+								>
+									<DropdownMenuLabel className="flex gap-2 items-center">
+										<Input type="search" placeholder="Find Chats"></Input>
+										<Button size="icon" className="size-8">
+											<MessageCirclePlus className="size-5" />
+										</Button>
+									</DropdownMenuLabel>
+									<DropdownMenuItem className="flex justify-between items-center">
+										Lorem Ipsum
+										<ArrowRight />
+									</DropdownMenuItem>
+									<DropdownMenuItem className="flex justify-between items-center">
+										Lorem Ipsum
+										<ArrowRight />
+									</DropdownMenuItem>
+									<DropdownMenuItem className="flex justify-between items-center">
+										Lorem Ipsum
+										<ArrowRight />
+									</DropdownMenuItem>
+									<DropdownMenuItem className="flex justify-between items-center">
+										Lorem Ipsum
+										<ArrowRight />
+									</DropdownMenuItem>
+									<DropdownMenuItem className="flex justify-between items-center">
+										Lorem Ipsum
+										<ArrowRight />
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
 						</BreadcrumbItem>
 					</BreadcrumbList>
 				</Breadcrumb>
 				<div className="flex items-center gap-4">
-					<Button className="pointer-events-auto hover:cursor-pointer">
-						New Chat
-						<MessageCirclePlus className="size-5"/>
-					</Button>
 					<SignedOut>
-							<SignInButton>
-								<Button variant="secondary" className="pointer-events-auto hover:cursor-pointer">
-									<IconBrandGoogleFilled/>
-									Sign In
-								</Button>
-							</SignInButton>
+						<SignInButton>
+							<Button
+								variant="secondary"
+								className="pointer-events-auto hover:cursor-pointer"
+							>
+								<IconBrandGoogleFilled />
+								Sign In
+							</Button>
+						</SignInButton>
 					</SignedOut>
 					<SignedIn>
 						<div className="pointer-events-auto">
@@ -93,7 +138,7 @@ export default function Home() {
 					</SignedIn>
 				</div>
 			</div>
-			{/* <Editor /> */}
+			<Editor />
 		</main>
 	);
 }

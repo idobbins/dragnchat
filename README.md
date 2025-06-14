@@ -16,9 +16,9 @@ Open source 'drag n drop' chat with graph-based context.
 - [x] scaffold: User Avatar
 - [x] scaffold: Clerk User info section
 - [x] scaffold: Active project breadcrumb
-- [ ] scaffold: Project selector dropdown 
-- [ ] scaffold: Project management ui (within Project selector dropdown for now)
-- [ ] scaffold: New Project button
+- [x] scaffold: Project selector dropdown 
+- [x] scaffold: Project management ui (within Project selector dropdown for now)
+- [x] scaffold: New Project button
 - [x] setup: React Flow
 - [x] scaffold: Basic Drag N Drop components
 - [ ] plan: Basic supported node types
