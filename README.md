@@ -21,7 +21,7 @@ Open source 'drag n drop' chat with graph-based context.
 - [x] scaffold: New Project button
 - [x] setup: React Flow
 - [x] scaffold: Basic Drag N Drop components
-- [ ] plan: Basic supported node types
+- [x] plan: Basic supported node types
 - [ ] scaffold: Nodes
 - [ ] scaffold: Node inspector ui for supported nodes
 - [ ] setup: OpenRouter integration
@@ -36,3 +36,20 @@ Open source 'drag n drop' chat with graph-based context.
 - [ ] setup: react taint (pending need)
 - [ ] setup: sentry error reporting (time depending)
 - [ ] setup: posthog (time depending)
+
+
+# Node Types
+
+- Input
+    - Text (user-input and file)
+    - Image
+    - Web Page
+
+- Output
+    - Text
+    - Image
+
+- Model Node
+    - Any supported by OpenRouter
+    - Input/output should be restricted to each for open router
+
