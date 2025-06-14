@@ -6,7 +6,9 @@ Open source 'drag n drop' chat with graph-based context.
 
 - [ ] Deployment
     - [x] Remove extra stuff I dont need.
-    - [ ] Vercel setup
+    - [x] Vercel setup
+        - [x] Project setup
+        - [x] Domain setup
     - [ ] Database setup
     - [ ] Tidy up build process (reference what Theo does)
 - [ ] UI
