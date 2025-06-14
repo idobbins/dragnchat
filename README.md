@@ -5,7 +5,7 @@ Open source 'drag n drop' chat with graph-based context.
 ## TODO
 
 - [ ] Deployment
-    - [ ] Remove extra stuff I dont need.
+    - [x] Remove extra stuff I dont need.
     - [ ] Vercel setup
     - [ ] Database setup
     - [ ] Tidy up build process (reference what Theo does)
@@ -22,11 +22,12 @@ Open source 'drag n drop' chat with graph-based context.
         - [ ] Connection to projects view
         - [ ] Active project chat information
 - [ ] Auth
-    - [ ] Remove discord auth
+    - [x] Remove discord auth
     - [ ] Google Auth if I can get the oauth approved in time, this may be a reason to use clerk.
-- [ ] OpenRouter API client
-    - [ ] Store user key in db
+- [ ] OpenRouter API client (Bring your own key is all we support)
+    - [ ] Store user api key in db
     - [ ] Async task execution queue, no chron though
+    - [ ] Different model support
 
 ## Misc - will do
 
