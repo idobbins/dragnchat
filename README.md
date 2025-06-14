@@ -5,11 +5,12 @@ Open source 'drag n drop' chat with graph-based context.
 ## TODO
 
 - [ ] Deployment
+    - [ ] Remove extra stuff I dont need.
     - [ ] Vercel setup
     - [ ] Database setup
     - [ ] Tidy up build process (reference what Theo does)
 - [ ] UI
-    - [ ] Setup shadcn
+    - [x] Setup shadcn
     - [ ] Scaffold
         - [ ] Header (likely just an avatar that is top-4 right-4)
         - [ ] User Profile Dropdown (just logout and login based on state for now. clerk is tempting for the <SignedIn /> and <SignedOut /> components)
