@@ -23,7 +23,7 @@ export default function ChatNode({ data, isConnectable }: NodeProps) {
 				type="target"
 				position={Position.Left}
 				isConnectable={isConnectable}
-				className="w-3 h-3 !bg-blue-500 border-2 border-white"
+				className="w-32 h-32 !bg-blue-500 border-2 border-white"
 			/>
 			
 			<Card className="w-96 h-96 shadow-lg">
@@ -53,7 +53,7 @@ export default function ChatNode({ data, isConnectable }: NodeProps) {
 				type="source"
 				position={Position.Right}
 				isConnectable={isConnectable}
-				className="w-3 h-3 !bg-green-500 border-2 border-white"
+				className="w-32 h-32 !bg-green-500 border-2 border-white"
 			/>
 		</>
 	);
