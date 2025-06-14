@@ -85,16 +85,7 @@ export default async function Home() {
 					</DropdownMenu>
 				</div>
 			</div>
-			{/* <div className="flex-1 flex w-screen h-screen bg-gray-50 absolute top-0 left-0 -z-10 pointer-events-none"> */}
-			{/* <Card className="w-96 h-96 relative top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-					<CardContent className="flex flex-col items-center justify-center h-full">
-						<div className="flex-1 w-full">Input</div>
-						<Separator />
-						<div className="flex-1 w-full">Output</div>
-					</CardContent> */}
-			{/* </Card> */}
 			<Editor />
-			{/* </div> */}
 		</main>
 	);
 }
