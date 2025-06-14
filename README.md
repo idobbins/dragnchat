@@ -14,8 +14,8 @@ Open source 'drag n drop' chat with graph-based context.
 - [ ] UI
     - [x] Setup shadcn
     - [ ] Scaffold
-        - [ ] Header (likely just an avatar that is top-4 right-4)
-        - [ ] User Profile Dropdown (just logout and login based on state for now. clerk is tempting for the <SignedIn /> and <SignedOut /> components)
+        - [x] Header (likely just an avatar that is top-4 right-4)
+        - [x] User Profile Dropdown (just logout and login based on state for now. clerk is tempting for the <SignedIn /> and <SignedOut /> components)
         - [ ] Project Selector (Probably a dialogue, i might try breadcrumbs with a dropdown actually)
         - [ ] Chat graph node
         - [ ] node connection
