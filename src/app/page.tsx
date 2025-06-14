@@ -1,9 +1,12 @@
+"use client";
+
 import {
 	SignInButton,
 	SignUpButton,
 	SignedIn,
 	SignedOut,
 	UserButton,
+	useAuth
 } from "@clerk/nextjs";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,8 +37,8 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-
-import { ChevronsUpDown, Flame, SquarePlus } from "lucide-react";
+import { IconBrandGoogleFilled } from '@tabler/icons-react';
+import { ChevronsUpDown, Flame, MessageCirclePlus, SquarePlus } from "lucide-react";
 
 import Editor from "./_components/Editor";
 
@@ -45,7 +48,9 @@ const initialNodes = [
 ];
 const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
 
-export default async function Home() {
+export default function Home() {
+  	const { isLoaded, isSignedIn, userId, sessionId, getToken } = useAuth()
+
 	return (
 		<main className="flex bg-none w-screen h-screen flex-col">
 			<div className="flex items-center justify-between p-4 z-10 pointer-events-none">
@@ -61,50 +66,34 @@ export default async function Home() {
 						</BreadcrumbItem>
 						<BreadcrumbSeparator className="text-foreground pointer-events-auto" />
 						<BreadcrumbItem className="text-foreground">
-							<div className="hover:cursor-default pointer-events-auto">
-								Project 1
+							<div className="hover:cursor-default pointer-events-auto text-lg">
+								{isSignedIn ? "Project 1" : "Demo"}
 							</div>
 							<ChevronsUpDown className="w-4 h-4 hover:cursor-pointer pointer-events-auto" />
 						</BreadcrumbItem>
 					</BreadcrumbList>
 				</Breadcrumb>
 				<div className="flex items-center gap-4">
-					<Button className="pointer-events-auto">
-						New Chat <SquarePlus />
+					<Button className="pointer-events-auto hover:cursor-pointer">
+						New Chat
+						<MessageCirclePlus className="size-5"/>
 					</Button>
-					<DropdownMenu>
-						<DropdownMenuTrigger className="pointer-events-auto">
-							<Avatar>
-								<AvatarImage src="https://github.com/shadcn.png" />
-								<AvatarFallback>CN</AvatarFallback>
-							</Avatar>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent
-							align="end"
-							alignOffset={8}
-							side="bottom"
-							sideOffset={8}
-							className="bg-white shadow-lg rounded-md"
-						>
-							<DropdownMenuLabel>isaac.dobbins@icloud.com</DropdownMenuLabel>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem>Settings</DropdownMenuItem>
-							<DropdownMenuItem className="focus:bg-white">
-								<SignedOut>
-									<SignInButton />
-								</SignedOut>
-								<SignedIn>
-									<UserButton />
-								</SignedIn>
-								{/* <Button variant="destructive" className="w-full"> */}
-								{/* Sign Out */}
-								{/* </Button> */}
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<SignedOut>
+							<SignInButton>
+								<Button variant="secondary" className="pointer-events-auto hover:cursor-pointer">
+									<IconBrandGoogleFilled/>
+									Sign In
+								</Button>
+							</SignInButton>
+					</SignedOut>
+					<SignedIn>
+						<div className="pointer-events-auto">
+							<UserButton />
+						</div>
+					</SignedIn>
 				</div>
 			</div>
-			<Editor />
+			{/* <Editor /> */}
 		</main>
 	);
 }

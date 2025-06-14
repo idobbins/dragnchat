@@ -14,7 +14,7 @@ Open source 'drag n drop' chat with graph-based context.
 - [x] remove: NextAuth
 - [x] setup: Clerk application
 - [x] scaffold: User Avatar
-- [ ] scaffold: User Info section, custom clerk component
+- [x] scaffold: Clerk User info section
 - [x] scaffold: Active project breadcrumb
 - [ ] scaffold: Project selector dropdown 
 - [ ] scaffold: Project management ui (within Project selector dropdown for now)
