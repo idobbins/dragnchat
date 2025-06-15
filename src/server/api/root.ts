@@ -1,8 +1,8 @@
 import { z } from "zod";
 import {
-	createCallerFactory,
-	createTRPCRouter,
-	publicProcedure,
+  createCallerFactory,
+  createTRPCRouter,
+  publicProcedure,
 } from "@/server/api/trpc";
 
 /**
@@ -11,11 +11,11 @@ import {
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-	health: publicProcedure.input(z.void()).query(async () => {
-		return {
-			message: "OK",
-		};
-	}),
+  health: publicProcedure.input(z.void()).query(async () => {
+    return {
+      message: "OK",
+    };
+  }),
 });
 
 // export type definition of API
