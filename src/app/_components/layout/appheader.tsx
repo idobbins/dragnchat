@@ -21,10 +21,7 @@ export function AppHeader({ isSignedIn }: AppHeaderProps) {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink
-              href="/"
-              className="text-foreground"
-            >
+            <BreadcrumbLink href="/" className="text-foreground">
               <Flame />
             </BreadcrumbLink>
           </BreadcrumbItem>

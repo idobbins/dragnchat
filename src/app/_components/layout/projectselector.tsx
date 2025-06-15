@@ -9,11 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  ArrowRight,
-  ChevronsUpDown,
-  MessageCirclePlus,
-} from "lucide-react";
+import { ArrowRight, ChevronsUpDown, MessageCirclePlus } from "lucide-react";
 import { useState } from "react";
 
 // Define the Project interface
@@ -26,45 +22,45 @@ interface Project {
 
 // Mock data to simulate database records
 const MOCK_PROJECTS: Project[] = [
-  { 
-    id: "1", 
-    name: "Marketing Campaign", 
-    createdAt: new Date("2025-05-01"), 
-    updatedAt: new Date("2025-06-10") 
+  {
+    id: "1",
+    name: "Marketing Campaign",
+    createdAt: new Date("2025-05-01"),
+    updatedAt: new Date("2025-06-10"),
   },
-  { 
-    id: "2", 
-    name: "Product Launch", 
-    createdAt: new Date("2025-04-15"), 
-    updatedAt: new Date("2025-06-12") 
+  {
+    id: "2",
+    name: "Product Launch",
+    createdAt: new Date("2025-04-15"),
+    updatedAt: new Date("2025-06-12"),
   },
-  { 
-    id: "3", 
-    name: "Website Redesign", 
-    createdAt: new Date("2025-03-20"), 
-    updatedAt: new Date("2025-06-08") 
+  {
+    id: "3",
+    name: "Website Redesign",
+    createdAt: new Date("2025-03-20"),
+    updatedAt: new Date("2025-06-08"),
   },
-  { 
-    id: "4", 
-    name: "Customer Research", 
-    createdAt: new Date("2025-05-25"), 
-    updatedAt: new Date("2025-06-14") 
+  {
+    id: "4",
+    name: "Customer Research",
+    createdAt: new Date("2025-05-25"),
+    updatedAt: new Date("2025-06-14"),
   },
-  { 
-    id: "5", 
-    name: "Quarterly Report", 
-    createdAt: new Date("2025-06-01"), 
-    updatedAt: new Date("2025-06-15") 
+  {
+    id: "5",
+    name: "Quarterly Report",
+    createdAt: new Date("2025-06-01"),
+    updatedAt: new Date("2025-06-15"),
   },
 ];
 
 export function ProjectSelector() {
   // State for search input
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Filter projects based on search query
-  const filteredProjects = MOCK_PROJECTS.filter(project => 
-    project.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredProjects = MOCK_PROJECTS.filter((project) =>
+    project.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // Handle project selection
@@ -92,28 +88,26 @@ export function ProjectSelector() {
         className="w-96 rounded-md bg-white shadow-lg"
       >
         <DropdownMenuLabel className="flex items-center gap-2">
-          <Input 
-            type="search" 
+          <Input
+            type="search"
             placeholder="Find Chats"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <Button 
-            size="icon" 
+          <Button
+            size="icon"
             className="size-8 hover:cursor-pointer"
             onClick={handleCreateProject}
           >
             <MessageCirclePlus className="size-5" />
           </Button>
         </DropdownMenuLabel>
-        
+
         {filteredProjects.length === 0 ? (
-          <DropdownMenuItem disabled>
-            No projects found
-          </DropdownMenuItem>
+          <DropdownMenuItem disabled>No projects found</DropdownMenuItem>
         ) : (
-          filteredProjects.map(project => (
-            <DropdownMenuItem 
+          filteredProjects.map((project) => (
+            <DropdownMenuItem
               key={project.id}
               className="flex items-center justify-between"
               onClick={() => handleSelectProject(project)}
