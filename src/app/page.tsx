@@ -49,6 +49,7 @@ import {
 } from "lucide-react";
 
 import Editor from "./_components/editor";
+import { SignInIndicator } from "./_components/signinindicator";
 
 const initialNodes = [
   { id: "1", position: { x: 0, y: 0 }, data: { label: "1" } },
@@ -122,13 +123,7 @@ export default function Home() {
         <div className="flex items-center gap-4">
           <SignedOut>
             <SignInButton>
-              <Button
-                variant="secondary"
-                className="pointer-events-auto hover:cursor-pointer"
-              >
-                <IconBrandGoogleFilled />
-                Sign In
-              </Button>
+              <SignInIndicator />
             </SignInButton>
           </SignedOut>
           <SignedIn>
