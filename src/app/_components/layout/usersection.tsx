@@ -18,9 +18,7 @@ export function UserSection({ isSignedIn }: UserSectionProps) {
         <LoginButton />
       </SignedOut>
       <SignedIn>
-        <div>
-          <UserButton />
-        </div>
+        <UserButton />
       </SignedIn>
     </div>
   );

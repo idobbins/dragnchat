@@ -7,7 +7,7 @@ export default function Home() {
   const { isSignedIn } = useAuth();
 
   return (
-    <main className="flex h-screen w-screen flex-col bg-none">
+    <main className="flex h-screen w-screen flex-col">
       <AppHeader isSignedIn={!!isSignedIn} />
     </main>
   );
