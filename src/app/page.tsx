@@ -1,64 +1,44 @@
 "use client";
 
 import {
-  SignInButton,
-  SignUpButton,
   SignedIn,
   SignedOut,
   UserButton,
   useAuth,
 } from "@clerk/nextjs";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { IconBrandGoogleFilled } from "@tabler/icons-react";
+
 import {
   ArrowRight,
   ChevronsUpDown,
   Flame,
   MessageCirclePlus,
-  Search,
-  SquarePlus,
 } from "lucide-react";
 
 import Editor from "./_components/editor";
-import { SignInIndicator } from "./_components/signinindicator";
-
-const initialNodes = [
-  { id: "1", position: { x: 0, y: 0 }, data: { label: "1" } },
-  { id: "2", position: { x: 0, y: 100 }, data: { label: "2" } },
-];
-const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
+import { LoginButton } from "./_components/loginbutton";
 
 export default function Home() {
-  const { isLoaded, isSignedIn, userId, sessionId, getToken } = useAuth();
+  const { isSignedIn } = useAuth();
 
   return (
     <main className="flex h-screen w-screen flex-col bg-none">
@@ -122,9 +102,7 @@ export default function Home() {
         </Breadcrumb>
         <div className="flex items-center gap-4">
           <SignedOut>
-            <SignInButton>
-              <SignInIndicator />
-            </SignInButton>
+            <LoginButton />
           </SignedOut>
           <SignedIn>
             <div className="pointer-events-auto">

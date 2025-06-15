@@ -4,7 +4,7 @@ import { IconBrandGoogleFilled } from "@tabler/icons-react";
 import { Loader2Icon } from "lucide-react";
 import { SignInButton } from "@clerk/nextjs";
 
-export function SignInIndicator() {
+export function LoginButton() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = () => {

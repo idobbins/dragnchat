@@ -90,7 +90,7 @@ export default function App() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
-        fitView
+        // fitView
       >
         <Controls />
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
