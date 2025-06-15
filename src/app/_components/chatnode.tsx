@@ -37,12 +37,20 @@ export function FileInputNode({ data, isConnectable }: NodeProps) {
 			</Card>
 
 			{/* Source handle for output connections */}
+
 			<Handle
 				type="source"
 				position={Position.Right}
 				isConnectable={isConnectable}
-				className="w-32 h-32 !bg-green-500 border-2 border-white"
+				className="!w-2 !h-2 !bg-green-500 border-2 !border-gray-200 transform translate-y-0"
 			/>
+			{/* <Handle
+				type="source"
+				position={Position.Right}
+				isConnectable={isConnectable}
+				className="!w-2 !h-2 !bg-green-500 border-2 !border-gray-200 transform translate-y-3"
+			/> */}
+
 		</>
 	);
 }
@@ -73,8 +81,9 @@ export function ImageInputNode({ data, isConnectable }: NodeProps) {
 				type="source"
 				position={Position.Right}
 				isConnectable={isConnectable}
-				className="w-32 h-32 !bg-green-500 border-2 border-white"
+				className="!w-2 !h-2 !bg-red-500 border-2 !border-gray-200 transform translate-y-0"
 			/>
+
 		</>
 	);
 }
@@ -105,7 +114,45 @@ export function TextInputNode({ data, isConnectable }: NodeProps) {
 				type="source"
 				position={Position.Right}
 				isConnectable={isConnectable}
-				className="w-32 h-32 !bg-green-500 border-2 border-white"
+				className="!w-2 !h-2 !bg-blue-500 border-2 !border-gray-200 transform translate-y-0"
+			/>
+		</>
+	);
+}
+
+export function ModelSelectNode({ data, isConnectable }: NodeProps) {
+	const nodeData = data as ChatNodeData;
+
+	return (
+		<>
+			{/* Target handle for input connections */}
+			<Handle
+				type="target"
+				position={Position.Left}
+				isConnectable={isConnectable}
+				className="!w-2 !h-2 !bg-blue-500 border-2 !border-gray-200 transform translate-y-0"
+			/>
+
+
+			<Card className="shadow-lg p-0 overflow-hidden w-32">
+				<CardContent className="flex flex-col h-full p-0">
+					<div className="flex-1 w-full flex text-xs bg-yellow-500 px-2 py-1 text-white font-semibold">
+						Model Select
+					</div>
+					<div className="p-2">
+						<Button variant="outline" size="icon" className="size-8 w-full">
+							<SquarePen className="size-5" />
+						</Button>
+					</div>
+				</CardContent>
+			</Card>
+
+			{/* Source handle for output connections */}
+			<Handle
+				type="source"
+				position={Position.Right}
+				isConnectable={isConnectable}
+				className="!w-2 !h-2 !bg-blue-500 border-2 !border-gray-200 transform translate-y-0"
 			/>
 		</>
 	);

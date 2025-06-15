@@ -14,7 +14,7 @@ import {
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
-import {FileInputNode, ImageInputNode, TextInputNode} from "./chatnode";
+import {FileInputNode, ImageInputNode, ModelSelectNode, TextInputNode} from "./chatnode";
 
 const initialNodes = [
 	{
@@ -44,6 +44,15 @@ const initialNodes = [
 			output: "With different content",
 		},
 	},
+	{
+		id: "4",
+		type: "modelSelectNode",
+		position: { x: 100, y: 500 },
+		data: {
+			input: "Another chat node",
+			output: "With different content",
+		},
+	},
 
 ];
 const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
@@ -57,6 +66,7 @@ export default function App() {
 		() => ({
 			fileInputNode: FileInputNode,
 			imageInputNode: ImageInputNode,
+			modelSelectNode: ModelSelectNode,
 			textInputNode: TextInputNode,
 		}),
 		[],
