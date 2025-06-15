@@ -1,19 +1,18 @@
 "use client";
 
 import React from "react";
-import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Handle, Position, type NodeProps as ReactFlowNodeProps } from "@xyflow/react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-
 import { FilePlus, ImagePlus, SquarePen } from "lucide-react";
-interface ChatNodeData {
-  input?: string;
-  output?: string;
+import type { NodeData } from "./editor/nodes/types";
+
+// Extend ReactFlow's NodeProps with our typed data
+interface TypedNodeProps extends Omit<ReactFlowNodeProps, 'data'> {
+  data: NodeData;
 }
 
-export function FileInputNode({ data, isConnectable }: NodeProps) {
-  const nodeData = data as ChatNodeData;
+export function FileInputNode({ data, isConnectable }: TypedNodeProps) {
 
   return (
     <>
@@ -50,8 +49,7 @@ export function FileInputNode({ data, isConnectable }: NodeProps) {
   );
 }
 
-export function ImageInputNode({ data, isConnectable }: NodeProps) {
-  const nodeData = data as ChatNodeData;
+export function ImageInputNode({ data, isConnectable }: TypedNodeProps) {
 
   return (
     <>
@@ -81,8 +79,7 @@ export function ImageInputNode({ data, isConnectable }: NodeProps) {
   );
 }
 
-export function TextInputNode({ data, isConnectable }: NodeProps) {
-  const nodeData = data as ChatNodeData;
+export function TextInputNode({ data, isConnectable }: TypedNodeProps) {
 
   return (
     <>
@@ -112,8 +109,7 @@ export function TextInputNode({ data, isConnectable }: NodeProps) {
   );
 }
 
-export function ModelSelectNode({ data, isConnectable }: NodeProps) {
-  const nodeData = data as ChatNodeData;
+export function ModelSelectNode({ data, isConnectable }: TypedNodeProps) {
 
   return (
     <>

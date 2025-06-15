@@ -20,8 +20,9 @@ import {
   ModelSelectNode,
   TextInputNode,
 } from "./chatnode";
+import type { EditorNode, EditorEdge } from "./editor/nodes/types";
 
-const initialNodes = [
+const initialNodes: EditorNode[] = [
   {
     id: "1",
     type: "textInputNode",
@@ -59,9 +60,9 @@ const initialNodes = [
     },
   },
 ];
-const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
+const initialEdges: EditorEdge[] = [{ id: "e1-2", source: "1", target: "2" }];
 
-export default function App() {
+export default function FlowEditor() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
