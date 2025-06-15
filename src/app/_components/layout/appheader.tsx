@@ -17,20 +17,20 @@ interface AppHeaderProps {
 
 export function AppHeader({ isSignedIn }: AppHeaderProps) {
   return (
-    <div className="pointer-events-none z-10 flex items-center justify-between p-4">
+    <div className="z-10 flex items-center justify-between p-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink
               href="/"
-              className="text-foreground pointer-events-auto"
+              className="text-foreground"
             >
               <Flame />
             </BreadcrumbLink>
           </BreadcrumbItem>
-          <BreadcrumbSeparator className="text-foreground pointer-events-auto" />
+          <BreadcrumbSeparator className="text-foreground" />
           <BreadcrumbItem className="text-foreground">
-            <div className="pointer-events-auto text-lg hover:cursor-default">
+            <div className="text-lg hover:cursor-default">
               {isSignedIn ? "Project 1" : "Demo"}
             </div>
             <ProjectSelector />

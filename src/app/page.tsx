@@ -2,7 +2,6 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { AppHeader } from "./_components/layout/appheader";
-import WorkArea from "./_components/workarea";
 
 export default function Home() {
   const { isSignedIn } = useAuth();
@@ -10,7 +9,6 @@ export default function Home() {
   return (
     <main className="flex h-screen w-screen flex-col bg-none">
       <AppHeader isSignedIn={!!isSignedIn} />
-      <WorkArea />
     </main>
   );
 }

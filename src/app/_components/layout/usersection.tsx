@@ -18,7 +18,7 @@ export function UserSection({ isSignedIn }: UserSectionProps) {
         <LoginButton />
       </SignedOut>
       <SignedIn>
-        <div className="pointer-events-auto">
+        <div>
           <UserButton />
         </div>
       </SignedIn>

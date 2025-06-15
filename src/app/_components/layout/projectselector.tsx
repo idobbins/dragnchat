@@ -19,7 +19,7 @@ export function ProjectSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <ChevronsUpDown className="pointer-events-auto h-4 w-4 hover:cursor-pointer" />
+        <ChevronsUpDown className="h-4 w-4 hover:cursor-pointer" />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
