@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useClerk } from "@clerk/nextjs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, Loader2, LogOut, XCircle } from "lucide-react";
+import { CheckCircle2, Loader2, LogOut, XCircle, AlertCircle } from "lucide-react";
+import { api } from "@/trpc/react";
 
 interface UserData {
   firstName: string | null;
@@ -33,13 +34,62 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiKey, setApiKey] = useState("");
+  const [validationError, setValidationError] = useState("");
+  const [isValidating, setIsValidating] = useState(false);
   const { signOut } = useClerk();
+
+  // tRPC hooks
+  const { data: keyStatus, refetch: refetchKeyStatus } = api.user.getOpenRouterKeyStatus.useQuery();
+  const setApiKeyMutation = api.user.setOpenRouterKey.useMutation();
+  const deleteApiKeyMutation = api.user.deleteOpenRouterKey.useMutation();
+
+  // Load API key status when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      refetchKeyStatus();
+    }
+  }, [isOpen, refetchKeyStatus]);
+
+  // Debounced API key validation
+  useEffect(() => {
+    if (!apiKey || apiKey.length < 10) {
+      setValidationError("");
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      setIsValidating(true);
+      setValidationError("");
+
+      try {
+        await setApiKeyMutation.mutateAsync({ apiKey });
+        await refetchKeyStatus();
+      } catch (error) {
+        setValidationError(error instanceof Error ? error.message : "Invalid API key");
+      } finally {
+        setIsValidating(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [apiKey, setApiKeyMutation, refetchKeyStatus]);
 
   const handleSignOut = async () => {
     setIsLoading(true);
     await signOut();
     setIsLoading(false);
     setIsOpen(false);
+  };
+
+  const handleDeleteApiKey = async () => {
+    try {
+      await deleteApiKeyMutation.mutateAsync();
+      setApiKey("");
+      setValidationError("");
+      await refetchKeyStatus();
+    } catch (error) {
+      setValidationError(error instanceof Error ? error.message : "Failed to delete API key");
+    }
   };
 
   // Calculate initials from server-provided user data
@@ -55,6 +105,8 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
             .toUpperCase()
         : "?";
 
+  const hasValidApiKey = keyStatus?.hasApiKey && !validationError;
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -68,9 +120,9 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
           </Avatar>
           <div
             className={`border-background absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 ${
-              apiKey ? "bg-green-500" : "bg-red-500"
+              hasValidApiKey ? "bg-green-500" : "bg-red-500"
             }`}
-            title={apiKey ? "API Key Set" : "API Key Missing"}
+            title={hasValidApiKey ? "API Key Set" : "API Key Missing"}
           />
         </div>
       </DialogTrigger>
@@ -96,33 +148,53 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="openrouter-api-key">OpenRouter API Key</Label>
-              {apiKey && (
-                <Badge
-                  variant={apiKey.length >= 20 ? "default" : "destructive"}
-                  className={apiKey.length >= 20 ? "bg-green-600" : ""}
-                >
-                  {apiKey.length >= 20 ? (
-                    <>
-                      <CheckCircle2 className="h-3 w-3" />
-                      Connected
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="h-3 w-3" />
-                      Invalid API Key
-                    </>
-                  )}
+              {isValidating ? (
+                <Badge variant="secondary">
+                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                  Validating...
                 </Badge>
-              )}
+              ) : hasValidApiKey ? (
+                <Badge variant="default" className="bg-green-600">
+                  <CheckCircle2 className="mr-1 h-3 w-3" />
+                  Connected
+                </Badge>
+              ) : validationError ? (
+                <Badge variant="destructive">
+                  <XCircle className="mr-1 h-3 w-3" />
+                  Invalid
+                </Badge>
+              ) : null}
             </div>
             <Input
               id="openrouter-api-key"
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Enter your OpenRouter API key"
+              placeholder={keyStatus?.hasApiKey ? "API key is set (enter new key to update)" : "Enter your OpenRouter API key"}
               className="font-mono"
             />
+            {validationError && (
+              <div className="flex items-center gap-2 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4" />
+                {validationError}
+              </div>
+            )}
+            {keyStatus?.hasApiKey && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDeleteApiKey}
+                disabled={deleteApiKeyMutation.isPending}
+                className="text-destructive hover:text-destructive"
+              >
+                {deleteApiKeyMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <XCircle className="mr-2 h-4 w-4" />
+                )}
+                Remove API Key
+              </Button>
+            )}
           </div>
           <Button
             variant="outline"

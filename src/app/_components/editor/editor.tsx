@@ -19,14 +19,16 @@ import {
   CommandItem,
   CommandSeparator,
 } from "@/components/ui/command";
+import {
+  TextInputNode,
+  ModelNode,
+  TextOutputNode,
+  type CustomNode,
+  type CustomNodeData,
+} from "./nodes";
 
 import "@xyflow/react/dist/style.css";
 
-interface NodeData extends Record<string, unknown> {
-  label: string;
-}
-
-type CustomNode = Node<NodeData>;
 type CustomEdge = Edge;
 
 interface EditorProps {
@@ -35,10 +37,33 @@ interface EditorProps {
 }
 
 const defaultNodes: CustomNode[] = [
-  { id: "1", position: { x: 100, y: 100 }, data: { label: "1" } },
-  { id: "2", position: { x: 100, y: 200 }, data: { label: "2" } },
+  { 
+    id: "1", 
+    position: { x: 100, y: 100 }, 
+    data: { 
+      label: "Sample Node 1",
+      type: "sample",
+      category: "input" as const
+    } 
+  },
+  { 
+    id: "2", 
+    position: { x: 100, y: 200 }, 
+    data: { 
+      label: "Sample Node 2",
+      type: "sample", 
+      category: "output" as const
+    } 
+  },
 ];
 const defaultEdges: CustomEdge[] = [{ id: "e1-2", source: "1", target: "2" }];
+
+// Define node types for React Flow
+const nodeTypes = {
+  'input-text': TextInputNode,
+  'model-model': ModelNode,
+  'output-text': TextOutputNode,
+};
 
 export function Editor({
   initialNodes = defaultNodes,
@@ -69,7 +94,7 @@ export function Editor({
 
   // Function to create a new node with smart positioning
   const createNode = useCallback(
-    (type: string, category: string, label: string) => {
+    (type: string, category: 'input' | 'model' | 'output' | 'operator', label: string) => {
       // Simple center positioning with small random offset to avoid overlapping
       const centerX = 400 + Math.random() * 100 - 50; // Random offset between -50 and 50
       const centerY = 300 + Math.random() * 100 - 50;
@@ -77,11 +102,57 @@ export function Editor({
       // Generate a unique ID
       const id = `${category}-${type}-${Date.now()}`;
 
+      // Create the appropriate node data based on category
+      let nodeData: CustomNodeData;
+      
+      switch (category) {
+        case 'input':
+          nodeData = {
+            label,
+            type,
+            category: 'input',
+            value: '',
+            format: 'text',
+          };
+          break;
+        case 'model':
+          nodeData = {
+            label,
+            type,
+            category: 'model',
+            modelId: undefined,
+            modelName: undefined,
+            parameters: {},
+            inputModalities: ['text'],
+            outputModalities: ['text'],
+          };
+          break;
+        case 'output':
+          nodeData = {
+            label,
+            type,
+            category: 'output',
+            content: '',
+            format: 'text',
+          };
+          break;
+        case 'operator':
+          nodeData = {
+            label,
+            type,
+            category: 'operator',
+            operation: type,
+            config: {},
+          };
+          break;
+      }
+
       // Create the new node
       const newNode: CustomNode = {
         id,
+        type: `${category}-${type}`, // This will be used to map to the correct component
         position: { x: centerX, y: centerY },
-        data: { label: `${label}` },
+        data: nodeData,
       };
 
       // Add the new node to the existing nodes
@@ -100,6 +171,7 @@ export function Editor({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        nodeTypes={nodeTypes}
       >
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
       </ReactFlow>
