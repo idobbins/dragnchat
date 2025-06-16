@@ -3,7 +3,6 @@
 import React, { useCallback, useRef, useState, useEffect } from "react";
 import {
   ReactFlow,
-  Controls,
   Background,
   BackgroundVariant,
   useNodesState,
@@ -102,7 +101,6 @@ export function Editor({
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
       >
-        <Controls />
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
       </ReactFlow>
 
