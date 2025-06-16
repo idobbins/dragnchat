@@ -34,7 +34,7 @@ export function AppHeader({ isSignedIn }: AppHeaderProps) {
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex items-center gap-4">
-        <HelpPopover />
+        {/* <HelpPopover /> */}
         <UserSection isSignedIn={isSignedIn} />
       </div>
     </div>

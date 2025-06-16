@@ -6,6 +6,7 @@ import {
 import { SignInDropdown } from "../auth/signin-dropdown";
 import { UserProfileDialog } from "../auth/user-profile-dialog";
 import { api } from "@/trpc/server";
+import type { OpenRouterModel } from "@/server/api/routers/openrouter";
 
 interface UserSectionProps {
   isSignedIn?: boolean;
@@ -82,23 +83,39 @@ export async function UserSection({ isSignedIn }: UserSectionProps) {
       }
     : null;
 
-  // Fetch API key status server-side for better SSR performance
+  // Fetch API key status and models server-side for better SSR performance
   let initialApiKeyStatus: { hasApiKey: boolean } | undefined;
+  let initialModels: OpenRouterModel[] | undefined;
+
   if (isSignedIn && user) {
     try {
       initialApiKeyStatus = await api.user.getOpenRouterKeyStatus();
+
+      // If user has API key, also prefetch models
+      if (initialApiKeyStatus?.hasApiKey) {
+        try {
+          const modelsResult = await api.openrouter.getModels();
+          initialModels = modelsResult.models;
+        } catch {
+          // If models fetch fails, continue without initial models
+          // The client will fetch them when needed
+          initialModels = undefined;
+        }
+      }
     } catch {
       // Fallback to undefined if server-side fetch fails
       initialApiKeyStatus = undefined;
+      initialModels = undefined;
     }
   }
 
   return (
     <div className="flex items-center gap-4">
       {isSignedIn && safeUserData ? (
-        <UserProfileDialog 
-          userData={safeUserData} 
+        <UserProfileDialog
+          userData={safeUserData}
           initialApiKeyStatus={initialApiKeyStatus}
+          initialModels={initialModels}
         />
       ) : (
         <SignInDropdown />

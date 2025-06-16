@@ -63,14 +63,17 @@ export const openrouterRouter = createTRPCRouter({
       const apiKey = privateMetadata?.openrouterApiKey;
 
       if (!apiKey) {
-        throw new Error("OpenRouter API key not found. Please add your API key in your profile.");
+        throw new Error(
+          "OpenRouter API key not found. Please add your API key in your profile.",
+        );
       }
 
       // Fetch models from OpenRouter
       const response = await fetch("https://openrouter.ai/api/v1/models", {
         headers: {
           Authorization: `Bearer ${apiKey}`,
-          "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+          "HTTP-Referer":
+            process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
           "X-Title": "DragNChat",
         },
       });
@@ -79,31 +82,35 @@ export const openrouterRouter = createTRPCRouter({
         throw new Error("Failed to fetch models from OpenRouter");
       }
 
-      const data = await response.json() as OpenRouterApiResponse;
-      
+      const data = (await response.json()) as OpenRouterApiResponse;
+
       // Transform the response to match our interface
-      const models: OpenRouterModel[] = data.data.map((model: OpenRouterApiModel) => ({
-        id: model.id,
-        name: model.name ?? model.id,
-        description: model.description ?? "",
-        architecture: {
-          input_modalities: model.architecture?.input_modalities ?? ["text"],
-          output_modalities: model.architecture?.output_modalities ?? ["text"],
-          tokenizer: model.architecture?.tokenizer ?? "unknown",
-        },
-        pricing: {
-          prompt: model.pricing?.prompt ?? "0",
-          completion: model.pricing?.completion ?? "0",
-          image: model.pricing?.image,
-        },
-        context_length: model.context_length ?? 0,
-        supported_parameters: model.supported_parameters ?? [],
-      }));
+      const models: OpenRouterModel[] = data.data.map(
+        (model: OpenRouterApiModel) => ({
+          id: model.id,
+          name: model.name ?? model.id,
+          description: model.description ?? "",
+          architecture: {
+            input_modalities: model.architecture?.input_modalities ?? ["text"],
+            output_modalities: model.architecture?.output_modalities ?? [
+              "text",
+            ],
+            tokenizer: model.architecture?.tokenizer ?? "unknown",
+          },
+          pricing: {
+            prompt: model.pricing?.prompt ?? "0",
+            completion: model.pricing?.completion ?? "0",
+            image: model.pricing?.image,
+          },
+          context_length: model.context_length ?? 0,
+          supported_parameters: model.supported_parameters ?? [],
+        }),
+      );
 
       return { models };
     } catch (error) {
       throw new Error(
-        error instanceof Error ? error.message : "Failed to fetch models"
+        error instanceof Error ? error.message : "Failed to fetch models",
       );
     }
   }),
@@ -115,7 +122,8 @@ export const openrouterRouter = createTRPCRouter({
         const response = await fetch("https://openrouter.ai/api/v1/models", {
           headers: {
             Authorization: `Bearer ${input.apiKey}`,
-            "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+            "HTTP-Referer":
+              process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
             "X-Title": "DragNChat",
           },
         });

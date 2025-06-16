@@ -22,7 +22,8 @@ export const userRouter = createTRPCRouter({
         const response = await fetch("https://openrouter.ai/api/v1/models", {
           headers: {
             Authorization: `Bearer ${input.apiKey}`,
-            "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+            "HTTP-Referer":
+              process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
             "X-Title": "DragNChat",
           },
         });
@@ -42,7 +43,7 @@ export const userRouter = createTRPCRouter({
         return { success: true };
       } catch (error) {
         throw new Error(
-          error instanceof Error ? error.message : "Failed to validate API key"
+          error instanceof Error ? error.message : "Failed to validate API key",
         );
       }
     }),
