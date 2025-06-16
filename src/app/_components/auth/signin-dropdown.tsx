@@ -54,7 +54,7 @@ export function SignInDropdown() {
                     </Button>
                   </Clerk.Connection>
 
-                  <Clerk.Connection name="github" asChild>
+                  {/* <Clerk.Connection name="github" asChild>
                     <Button
                       variant="outline"
                       type="button"
@@ -74,7 +74,7 @@ export function SignInDropdown() {
                         }
                       </Clerk.Loading>
                     </Button>
-                  </Clerk.Connection>
+                  </Clerk.Connection> */}
                 </div>
               </SignIn.Step>
             )}
