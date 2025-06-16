@@ -4,6 +4,11 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { clerkClient } from "@clerk/nextjs/server";
 
+// Interface for Clerk private metadata
+interface ClerkPrivateMetadata {
+  openrouterApiKey?: string;
+}
+
 export const userRouter = createTRPCRouter({
   setOpenRouterKey: protectedProcedure
     .input(z.object({ apiKey: z.string().min(1, "API key is required") }))
@@ -17,7 +22,7 @@ export const userRouter = createTRPCRouter({
         const response = await fetch("https://openrouter.ai/api/v1/models", {
           headers: {
             Authorization: `Bearer ${input.apiKey}`,
-            "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+            "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
             "X-Title": "DragNChat",
           },
         });
@@ -50,9 +55,10 @@ export const userRouter = createTRPCRouter({
 
       const clerk = await clerkClient();
       const user = await clerk.users.getUser(ctx.user.userId);
-      const hasApiKey = !!(user.privateMetadata as any)?.openrouterApiKey;
+      const privateMetadata = user.privateMetadata as ClerkPrivateMetadata;
+      const hasApiKey = !!privateMetadata?.openrouterApiKey;
       return { hasApiKey };
-    } catch (error) {
+    } catch {
       return { hasApiKey: false };
     }
   }),
@@ -70,7 +76,7 @@ export const userRouter = createTRPCRouter({
         },
       });
       return { success: true };
-    } catch (error) {
+    } catch {
       throw new Error("Failed to delete API key");
     }
   }),

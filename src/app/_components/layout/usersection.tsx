@@ -87,7 +87,7 @@ export async function UserSection({ isSignedIn }: UserSectionProps) {
   if (isSignedIn && user) {
     try {
       initialApiKeyStatus = await api.user.getOpenRouterKeyStatus();
-    } catch (error) {
+    } catch {
       // Fallback to undefined if server-side fetch fails
       initialApiKeyStatus = undefined;
     }

@@ -102,7 +102,7 @@ export function UserProfileDialog({ userData, initialApiKeyStatus }: UserProfile
     
     try {
       await setApiKeyMutation.mutateAsync({ apiKey });
-    } catch (error) {
+    } catch {
       // Error handling is done in the mutation's onError callback
     }
   };
@@ -113,7 +113,7 @@ export function UserProfileDialog({ userData, initialApiKeyStatus }: UserProfile
   const handleDeleteApiKey = async (): Promise<void> => {
     try {
       await deleteApiKeyMutation.mutateAsync();
-    } catch (error) {
+    } catch {
       // Error handling is done in the mutation's onError callback
     }
   };
