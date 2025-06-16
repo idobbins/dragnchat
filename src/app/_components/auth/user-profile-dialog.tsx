@@ -28,10 +28,12 @@ interface UserData {
   fullName: string | null;
   imageUrl: string;
   primaryEmailAddress: string | null;
+  initials: string;
 }
 
 interface UserProfileDialogProps {
   userData: UserData;
+  initialApiKeyStatus?: { hasApiKey: boolean };
 }
 
 interface ApiKeyState {
@@ -41,7 +43,7 @@ interface ApiKeyState {
   validationError: string | null;
 }
 
-export function UserProfileDialog({ userData }: UserProfileDialogProps) {
+export function UserProfileDialog({ userData, initialApiKeyStatus }: UserProfileDialogProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [apiKey, setApiKey] = useState<string>("");
@@ -50,10 +52,13 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
   const [isPendingSuccess, setIsPendingSuccess] = useState<boolean>(false);
   const { signOut } = useClerk();
 
-  // tRPC hooks - only fetch when dialog is open
+  // tRPC hooks - use initial data and only fetch when dialog is open
   const { data: keyStatus, refetch: refetchKeyStatus } = api.user.getOpenRouterKeyStatus.useQuery(
     undefined,
-    { enabled: isOpen }
+    { 
+      enabled: isOpen,
+      initialData: initialApiKeyStatus
+    }
   );
   const setApiKeyMutation = api.user.setOpenRouterKey.useMutation({
     onSuccess: async () => {
@@ -123,18 +128,8 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
     setIsOpen(false);
   };
 
-  // Calculate initials from server-provided user data
-  const initials =
-    userData.firstName && userData.lastName
-      ? `${userData.firstName[0]}${userData.lastName[0]}`
-      : userData.fullName
-        ? userData.fullName
-            .split(" ")
-            .map((name) => name[0])
-            .join("")
-            .slice(0, 2)
-            .toUpperCase()
-        : "?";
+  // Use server-computed initials for better SSR performance
+  const initials = userData.initials;
 
   /**
    * Derive API key status for cleaner state management
@@ -218,7 +213,10 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
   const apiKeyState = getApiKeyState();
   const buttonAction = getButtonAction(apiKeyState);
   const placeholderText = getPlaceholderText(apiKeyState);
-  const hasValidApiKey = apiKeyState.status === 'VALID';
+  
+  // Use initial data for immediate status display, fallback to current state
+  const hasValidApiKey = apiKeyState.status === 'VALID' || 
+    (initialApiKeyStatus?.hasApiKey && !isOpen && !validationError);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
