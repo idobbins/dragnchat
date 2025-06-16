@@ -4,16 +4,17 @@ import React, { useCallback } from "react";
 import { BaseNode } from "../base/base-node";
 import { DynamicHandles } from "../base/dynamic-handles";
 import { ModelCombobox } from "./model-combobox";
+import { useNodeUpdate } from "../../context/node-update-context";
 import type { BaseNodeProps, ModelNodeData } from "../base/types";
 import type { OpenRouterModel } from "../services/openrouter";
 
-export function ModelNode({ data, selected, ...props }: BaseNodeProps) {
+export function ModelNode({ id, data, selected, ...props }: BaseNodeProps) {
   const modelData = data as ModelNodeData;
+  const { updateNodeData } = useNodeUpdate();
 
   const handleModelChange = useCallback((modelId: string, model: OpenRouterModel) => {
     // Update node data with selected model information
-    const updatedData: ModelNodeData = {
-      ...modelData,
+    const updatedData: Partial<ModelNodeData> = {
       modelId,
       modelName: model.name,
       inputModalities: model.architecture.input_modalities,
@@ -21,13 +22,12 @@ export function ModelNode({ data, selected, ...props }: BaseNodeProps) {
       parameters: {}, // Initialize empty parameters
     };
 
-    // In a real implementation, you would update the node data in the React Flow state
-    // This would typically be done through a callback passed down from the parent component
-    console.log("Model selected:", updatedData);
-  }, [modelData]);
+    // Update the node data in React Flow state
+    updateNodeData(id, updatedData);
+  }, [id, updateNodeData]);
 
   return (
-    <BaseNode data={data} selected={selected} {...props}>
+    <BaseNode id={id} data={data} selected={selected} {...props}>
       <div className="space-y-3">
         <ModelCombobox
           value={modelData.modelId}

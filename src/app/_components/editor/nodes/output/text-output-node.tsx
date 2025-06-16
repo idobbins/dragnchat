@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Copy, Download, FileText } from "lucide-react";
 import type { BaseNodeProps, OutputNodeData } from "../base/types";
 
-export function TextOutputNode({ data, selected, ...props }: BaseNodeProps) {
+export function TextOutputNode({ id, data, selected, ...props }: BaseNodeProps) {
   const outputData = data as OutputNodeData;
   const textContent = outputData.content as string || "";
 
@@ -31,7 +31,7 @@ export function TextOutputNode({ data, selected, ...props }: BaseNodeProps) {
   };
 
   return (
-    <BaseNode data={data} selected={selected} {...props}>
+    <BaseNode id={id} data={data} selected={selected} {...props}>
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-green-600" />

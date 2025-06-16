@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { BaseNodeProps } from "./types";
 
-export function BaseNode({ data, children, selected }: BaseNodeProps) {
+export function BaseNode({ id, data, children, selected }: BaseNodeProps) {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'input':

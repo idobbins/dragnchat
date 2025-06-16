@@ -26,6 +26,7 @@ import {
   type CustomNode,
   type CustomNodeData,
 } from "./nodes";
+import { NodeUpdateProvider } from "./context/node-update-context";
 
 import "@xyflow/react/dist/style.css";
 
@@ -78,6 +79,17 @@ export function Editor({
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges],
   );
+
+  // Function to update node data from within node components
+  const updateNodeData = useCallback((nodeId: string, newData: Partial<CustomNodeData>) => {
+    setNodes((nds) => 
+      nds.map((node) => 
+        node.id === nodeId 
+          ? { ...node, data: { ...node.data, ...newData } }
+          : node
+      )
+    );
+  }, [setNodes]);
 
   // Keyboard shortcut handler
   useEffect(() => {
@@ -164,17 +176,19 @@ export function Editor({
 
   return (
     <div className="absolute top-0 left-0 h-screen w-screen">
-      <ReactFlow
-        ref={reactFlowRef}
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        nodeTypes={nodeTypes}
-      >
-        <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
-      </ReactFlow>
+      <NodeUpdateProvider updateNodeData={updateNodeData}>
+        <ReactFlow
+          ref={reactFlowRef}
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+        >
+          <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+        </ReactFlow>
+      </NodeUpdateProvider>
 
       {/* Command Menu */}
       <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>

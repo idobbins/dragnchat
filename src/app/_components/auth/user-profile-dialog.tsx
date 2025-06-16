@@ -50,7 +50,7 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
     }
   }, [isOpen, refetchKeyStatus]);
 
-  // Debounced API key validation
+  // Debounced API key validation and saving
   useEffect(() => {
     if (!apiKey || apiKey.length < 10) {
       setValidationError("");
@@ -62,14 +62,16 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
       setValidationError("");
 
       try {
+        // Save and validate the API key
         await setApiKeyMutation.mutateAsync({ apiKey });
+        // Only refetch status after successful save to prevent loops
         await refetchKeyStatus();
       } catch (error) {
         setValidationError(error instanceof Error ? error.message : "Invalid API key");
       } finally {
         setIsValidating(false);
       }
-    }, 500);
+    }, 1000); // Increased debounce time to reduce API calls
 
     return () => clearTimeout(timeoutId);
   }, [apiKey, setApiKeyMutation, refetchKeyStatus]);

@@ -38,6 +38,7 @@ export type CustomNodeData = InputNodeData | ModelNodeData | OutputNodeData | Op
 export type CustomNode = Node<CustomNodeData>;
 
 export interface BaseNodeProps extends NodeProps {
+  id: string;
   data: CustomNodeData;
   children?: React.ReactNode;
 }

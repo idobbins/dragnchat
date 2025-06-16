@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Type, FileText } from "lucide-react";
 import type { BaseNodeProps, InputNodeData } from "../base/types";
 
-export function TextInputNode({ data, selected, ...props }: BaseNodeProps) {
+export function TextInputNode({ id, data, selected, ...props }: BaseNodeProps) {
   const inputData = data as InputNodeData;
   const [textValue, setTextValue] = useState(inputData.value as string || "");
   const [isMultiline, setIsMultiline] = useState(false);
@@ -22,7 +22,7 @@ export function TextInputNode({ data, selected, ...props }: BaseNodeProps) {
   }, []);
 
   return (
-    <BaseNode data={data} selected={selected} {...props}>
+    <BaseNode id={id} data={data} selected={selected} {...props}>
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Type className="h-4 w-4 text-blue-600" />
