@@ -15,8 +15,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, Loader2, LogOut, XCircle, AlertCircle } from "lucide-react";
+import { CheckCircle2, Loader2, LogOut, XCircle, AlertCircle, Minus, Save, Trash2 } from "lucide-react";
 import { api } from "@/trpc/react";
+
+// Type definitions for better state management
+type ApiKeyStatus = 'NOT_SET' | 'VALIDATING' | 'VALID' | 'INVALID';
+type ButtonAction = 'SAVE' | 'DELETE' | 'LOADING';
 
 interface UserData {
   firstName: string | null;
@@ -30,12 +34,20 @@ interface UserProfileDialogProps {
   userData: UserData;
 }
 
+interface ApiKeyState {
+  status: ApiKeyStatus;
+  hasExistingKey: boolean;
+  isUserTyping: boolean;
+  validationError: string | null;
+}
+
 export function UserProfileDialog({ userData }: UserProfileDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState("");
-  const [validationError, setValidationError] = useState("");
-  const [isValidating, setIsValidating] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [apiKey, setApiKey] = useState<string>("");
+  const [validationError, setValidationError] = useState<string>("");
+  const [isValidating, setIsValidating] = useState<boolean>(false);
+  const [isPendingSuccess, setIsPendingSuccess] = useState<boolean>(false);
   const { signOut } = useClerk();
 
   // tRPC hooks - only fetch when dialog is open
@@ -44,23 +56,39 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
     { enabled: isOpen }
   );
   const setApiKeyMutation = api.user.setOpenRouterKey.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       setValidationError("");
-      refetchKeyStatus();
+      setApiKey(""); // Clear input after successful save
+      setIsPendingSuccess(true); // Prevent flickering to "Not Set"
+      await refetchKeyStatus();
+      setIsPendingSuccess(false); // Clear pending state after refetch
     },
     onError: (error) => {
       setValidationError(error.message);
+      setIsPendingSuccess(false); // Clear pending state on error
     },
     onSettled: () => {
       setIsValidating(false);
     },
   });
-  const deleteApiKeyMutation = api.user.deleteOpenRouterKey.useMutation();
-
-  // Handle API key validation on blur
-  const handleApiKeyBlur = async () => {
-    if (!apiKey || apiKey.length < 10) {
+  
+  const deleteApiKeyMutation = api.user.deleteOpenRouterKey.useMutation({
+    onSuccess: async () => {
       setValidationError("");
+      setApiKey("");
+      await refetchKeyStatus();
+    },
+    onError: (error) => {
+      setValidationError(error instanceof Error ? error.message : "Failed to delete API key");
+    },
+  });
+
+  /**
+   * Handle saving/updating the API key
+   */
+  const handleSaveApiKey = async (): Promise<void> => {
+    if (!apiKey || apiKey.length < 10) {
+      setValidationError("API key must be at least 10 characters");
       return;
     }
 
@@ -74,22 +102,25 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
     }
   };
 
-  const handleSignOut = async () => {
+  /**
+   * Handle deleting the existing API key
+   */
+  const handleDeleteApiKey = async (): Promise<void> => {
+    try {
+      await deleteApiKeyMutation.mutateAsync();
+    } catch (error) {
+      // Error handling is done in the mutation's onError callback
+    }
+  };
+
+  /**
+   * Handle sign out action
+   */
+  const handleSignOut = async (): Promise<void> => {
     setIsLoading(true);
     await signOut();
     setIsLoading(false);
     setIsOpen(false);
-  };
-
-  const handleDeleteApiKey = async () => {
-    try {
-      await deleteApiKeyMutation.mutateAsync();
-      setApiKey("");
-      setValidationError("");
-      await refetchKeyStatus();
-    } catch (error) {
-      setValidationError(error instanceof Error ? error.message : "Failed to delete API key");
-    }
   };
 
   // Calculate initials from server-provided user data
@@ -105,7 +136,89 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
             .toUpperCase()
         : "?";
 
-  const hasValidApiKey = keyStatus?.hasApiKey && !validationError;
+  /**
+   * Derive API key status for cleaner state management
+   */
+  const getApiKeyStatus = (): ApiKeyStatus => {
+    if (isValidating) return 'VALIDATING';
+    if (validationError) return 'INVALID';
+    // Show VALID during pending success to prevent flickering
+    if (isPendingSuccess) return 'VALID';
+    if (keyStatus?.hasApiKey && !validationError) return 'VALID';
+    return 'NOT_SET';
+  };
+
+  /**
+   * Get the current API key state
+   */
+  const getApiKeyState = (): ApiKeyState => {
+    const status = getApiKeyStatus();
+    return {
+      status,
+      hasExistingKey: Boolean(keyStatus?.hasApiKey),
+      isUserTyping: apiKey.length > 0,
+      validationError: validationError || null,
+    };
+  };
+
+  /**
+   * Determine what action the button should perform
+   */
+  const getButtonAction = (state: ApiKeyState): ButtonAction => {
+    if (isValidating || setApiKeyMutation.isPending || deleteApiKeyMutation.isPending) {
+      return 'LOADING';
+    }
+    
+    if (state.hasExistingKey && !state.isUserTyping) {
+      return 'DELETE';
+    }
+    
+    return 'SAVE';
+  };
+
+  /**
+   * Get the appropriate placeholder text
+   */
+  const getPlaceholderText = (state: ApiKeyState): string => {
+    if (state.hasExistingKey) {
+      return "Update API key";
+    }
+    return "Enter your OpenRouter API key";
+  };
+
+  /**
+   * Handle input change with validation error clearing
+   */
+  const handleApiKeyChange = (value: string): void => {
+    setApiKey(value);
+    if (validationError && value !== apiKey) {
+      setValidationError("");
+    }
+  };
+
+  /**
+   * Handle button click based on current action
+   */
+  const handleButtonClick = async (): Promise<void> => {
+    const action = getButtonAction(apiKeyState);
+    
+    switch (action) {
+      case 'SAVE':
+        await handleSaveApiKey();
+        break;
+      case 'DELETE':
+        await handleDeleteApiKey();
+        break;
+      case 'LOADING':
+        // Do nothing while loading
+        break;
+    }
+  };
+
+  const apiKeyState = getApiKeyState();
+  const buttonAction = getButtonAction(apiKeyState);
+  const placeholderText = getPlaceholderText(apiKeyState);
+  const hasValidApiKey = apiKeyState.status === 'VALID';
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -148,53 +261,81 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="openrouter-api-key">OpenRouter API Key</Label>
-              {isValidating ? (
-                <Badge variant="secondary">
-                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                  Validating...
-                </Badge>
-              ) : hasValidApiKey ? (
-                <Badge variant="default" className="bg-green-600">
-                  <CheckCircle2 className="mr-1 h-3 w-3" />
-                  Connected
-                </Badge>
-              ) : validationError ? (
-                <Badge variant="destructive">
-                  <XCircle className="mr-1 h-3 w-3" />
-                  Invalid
-                </Badge>
-              ) : null}
+              {(() => {
+                switch (apiKeyState.status) {
+                  case 'VALIDATING':
+                    return (
+                      <Badge variant="secondary">
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                        Validating...
+                      </Badge>
+                    );
+                  case 'VALID':
+                    return (
+                      <Badge variant="default" className="bg-green-600">
+                        <CheckCircle2 className="mr-1 h-3 w-3" />
+                        Connected
+                      </Badge>
+                    );
+                  case 'INVALID':
+                    return (
+                      <Badge variant="destructive">
+                        <XCircle className="mr-1 h-3 w-3" />
+                        Invalid
+                      </Badge>
+                    );
+                  case 'NOT_SET':
+                  default:
+                    return (
+                      <Badge variant="outline">
+                        <Minus className="mr-1 h-3 w-3" />
+                        Not Set
+                      </Badge>
+                    );
+                }
+              })()}
             </div>
-            <Input
-              id="openrouter-api-key"
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              onBlur={handleApiKeyBlur}
-              placeholder={keyStatus?.hasApiKey ? "API key is set (enter new key to update)" : "Enter your OpenRouter API key"}
-              className="font-mono"
-            />
-            {validationError && (
+            
+            {/* Single row: Input field + Icon button */}
+            <div className="flex gap-2">
+              <Input
+                id="openrouter-api-key"
+                type="password"
+                value={apiKey}
+                onChange={(e) => handleApiKeyChange(e.target.value)}
+                placeholder={placeholderText}
+                className="font-mono flex-1"
+              />
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={handleButtonClick}
+                disabled={buttonAction === 'LOADING'}
+                className={buttonAction === 'DELETE' ? "text-destructive hover:text-destructive" : ""}
+                title={
+                  buttonAction === 'SAVE' 
+                    ? "Save API key" 
+                    : buttonAction === 'DELETE' 
+                    ? "Delete API key" 
+                    : "Loading..."
+                }
+              >
+                {buttonAction === 'LOADING' ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : buttonAction === 'DELETE' ? (
+                  <Trash2 className="h-4 w-4" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            
+            {/* Error message */}
+            {apiKeyState.validationError && (
               <div className="flex items-center gap-2 text-sm text-destructive">
                 <AlertCircle className="h-4 w-4" />
-                {validationError}
+                {apiKeyState.validationError}
               </div>
-            )}
-            {keyStatus?.hasApiKey && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDeleteApiKey}
-                disabled={deleteApiKeyMutation.isPending}
-                className="text-destructive hover:text-destructive"
-              >
-                {deleteApiKeyMutation.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <XCircle className="mr-2 h-4 w-4" />
-                )}
-                Remove API Key
-              </Button>
             )}
           </div>
           <Button
