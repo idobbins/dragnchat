@@ -79,13 +79,13 @@ export function Editor(): React.ReactElement {
             // Store the position where the context menu was triggered
             const bounds = e.currentTarget.getBoundingClientRect();
             const flowWrapper = reactFlowRef.current?.getBoundingClientRect();
-            
+
             // Calculate position relative to the flow container
             // This is a simplified version without the transform calculations that ReactFlow does internally
             // For a more accurate position, we'd need to account for zoom and pan, but this works for basic positioning
             const x = e.clientX - (flowWrapper?.left ?? 0);
             const y = e.clientY - (flowWrapper?.top ?? 0);
-            
+
             setContextMenuPosition({ x, y });
           }}
         >

@@ -8,7 +8,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Flame, HelpCircle, MousePointer2 } from "lucide-react";
 import { ProjectSelector } from "./projectselector";
 import { UserSection } from "./usersection";
@@ -47,14 +51,15 @@ export function AppHeader({ isSignedIn }: AppHeaderProps) {
               <div className="space-y-2">
                 <p>
                   Set up your OpenRouter API key at{" "}
-                  <a 
-                    href="https://openrouter.ai" 
-                    target="_blank" 
+                  <a
+                    href="https://openrouter.ai"
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary underline"
                   >
                     OpenRouter
-                  </a>.
+                  </a>
+                  .
                 </p>
                 <div className="flex items-center gap-2">
                   <MousePointer2 className="h-4 w-4" />

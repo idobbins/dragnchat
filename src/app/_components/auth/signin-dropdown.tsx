@@ -8,28 +8,30 @@ import {
   IconBrandGithubFilled,
 } from "@tabler/icons-react";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export function SignInDropdown() {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
-    <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {!isHovered ? (
-        // Fake "Sign In" button
-        <div className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium">
-          Sign In
-        </div>
-      ) : (
-        // Sign-in options
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button>Sign In</Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-auto p-0"
+        align="end"
+        alignOffset={0}
+        side="bottom"
+        sideOffset={8}
+      >
         <SignIn.Root>
           <Clerk.Loading>
             {(isGlobalLoading) => (
               <SignIn.Step name="start">
-                <div className="border-border bg-background flex flex-col gap-2 rounded-md border p-2">
+                <div className="flex flex-col gap-2 p-2">
                   <Clerk.Connection name="google" asChild>
                     <Button
                       variant="outline"
@@ -78,7 +80,7 @@ export function SignInDropdown() {
             )}
           </Clerk.Loading>
         </SignIn.Root>
-      )}
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 }
