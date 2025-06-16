@@ -5,7 +5,7 @@ Open source 'drag n drop' chat with graph-based context.
 ## TODO
 
 - [x] OpenRouter API key validation
-- [ ] OpenRouter model manifest
+- [x] OpenRouter model manifest
 - [ ] Editor model select node (watch for massive redraw)
 - [ ] Editor Text Input node
 - [ ] Editor Text Output node
