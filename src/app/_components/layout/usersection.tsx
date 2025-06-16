@@ -11,7 +11,6 @@ interface UserSectionProps {
 }
 
 export async function UserSection({ isSignedIn }: UserSectionProps) {
-  // Fetch user data server-side for better SSR performance
   const user = await currentUser();
 
   if (user) {
