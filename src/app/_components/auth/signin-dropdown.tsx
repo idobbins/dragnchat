@@ -34,7 +34,7 @@ export function SignInDropdown() {
                     <Button
                       variant="outline"
                       type="button"
-                      className="flex w-full items-center gap-2"
+                      className="flex w-full items-center gap-2 hover:cursor-pointer"
                       disabled={isGlobalLoading}
                     >
                       <Clerk.Loading scope="provider:google">
@@ -56,7 +56,7 @@ export function SignInDropdown() {
                     <Button
                       variant="outline"
                       type="button"
-                      className="flex w-full items-center"
+                      className="flex w-full items-center hover:cursor-pointer"
                       disabled={isGlobalLoading}
                     >
                       <Clerk.Loading scope="provider:github">

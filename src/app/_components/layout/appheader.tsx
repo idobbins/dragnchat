@@ -34,7 +34,7 @@ export function AppHeader({ isSignedIn }: AppHeaderProps) {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <UserSection isSignedIn={isSignedIn} />
+      <UserSection />
     </div>
   );
 }
