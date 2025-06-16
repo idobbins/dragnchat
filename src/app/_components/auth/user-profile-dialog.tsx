@@ -18,7 +18,6 @@ import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, Loader2, LogOut, XCircle } from "lucide-react";
 
 interface UserData {
-  id: string;
   firstName: string | null;
   lastName: string | null;
   fullName: string | null;
@@ -47,7 +46,9 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
   const initials =
     userData.firstName && userData.lastName
       ? `${userData.firstName[0]}${userData.lastName[0]}`
-      : (userData.primaryEmailAddress?.[0] ?? "?");
+      : userData.fullName
+      ? userData.fullName.split(' ').map(name => name[0]).join('').slice(0, 2).toUpperCase()
+      : "?";
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
