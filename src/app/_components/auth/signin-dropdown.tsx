@@ -4,13 +4,9 @@ import * as Clerk from "@clerk/elements/common";
 import * as SignIn from "@clerk/elements/sign-in";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { IconBrandGoogleFilled, IconBrandGithubFilled } from "@tabler/icons-react";
+  IconBrandGoogleFilled,
+  IconBrandGithubFilled,
+} from "@tabler/icons-react";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -18,30 +14,70 @@ export function SignInDropdown() {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div 
-      className="rounded-md overflow-hidden transition-all duration-200 ease-in-out hover:shadow-sm"
+    <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {!isHovered ? (
-        // Simple "Sign In" button
-        <div className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium">
+        // Fake "Sign In" button
+        <div className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium">
           Sign In
         </div>
       ) : (
         // Sign-in options
-        <div className="p-2 border border-border rounded-md bg-background">
-          <div className="flex flex-col gap-2">
-            <Button variant="outline" className="w-full flex gap-2">
-              <IconBrandGoogleFilled />
-              Sign in with Google
-            </Button>
-            <Button variant="outline" className="w-full flex gap-2">
-              <IconBrandGithubFilled />
-              Sign in with GitHub
-            </Button>
-          </div>
-        </div>
+        <SignIn.Root>
+          <Clerk.Loading>
+            {(isGlobalLoading) => (
+              <SignIn.Step name="start">
+                <div className="border-border bg-background flex flex-col gap-2 rounded-md border p-2">
+                  <Clerk.Connection name="google" asChild>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      className="flex w-full items-center gap-2"
+                      disabled={isGlobalLoading}
+                    >
+                      <Clerk.Loading scope="provider:google">
+                        {(isLoading) =>
+                          isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <IconBrandGoogleFilled className="h-4 w-4" />
+                              Sign in with Google
+                            </>
+                          )
+                        }
+                      </Clerk.Loading>
+                    </Button>
+                  </Clerk.Connection>
+
+                  <Clerk.Connection name="github" asChild>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      className="flex w-full items-center"
+                      disabled={isGlobalLoading}
+                    >
+                      <Clerk.Loading scope="provider:github">
+                        {(isLoading) =>
+                          isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <IconBrandGithubFilled className="h-4 w-4" />
+                              Sign in with GitHub
+                            </>
+                          )
+                        }
+                      </Clerk.Loading>
+                    </Button>
+                  </Clerk.Connection>
+                </div>
+              </SignIn.Step>
+            )}
+          </Clerk.Loading>
+        </SignIn.Root>
       )}
     </div>
   );

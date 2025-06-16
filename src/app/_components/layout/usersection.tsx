@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  SignedIn,
-  SignedOut,
-} from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { SignInDropdown } from "../auth/signin-dropdown";
 import { UserProfileDialog } from "../auth/user-profile-dialog";
 
