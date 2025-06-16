@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useClerk } from "@clerk/nextjs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -38,43 +38,41 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
   const [isValidating, setIsValidating] = useState(false);
   const { signOut } = useClerk();
 
-  // tRPC hooks
-  const { data: keyStatus, refetch: refetchKeyStatus } = api.user.getOpenRouterKeyStatus.useQuery();
-  const setApiKeyMutation = api.user.setOpenRouterKey.useMutation();
+  // tRPC hooks - only fetch when dialog is open
+  const { data: keyStatus, refetch: refetchKeyStatus } = api.user.getOpenRouterKeyStatus.useQuery(
+    undefined,
+    { enabled: isOpen }
+  );
+  const setApiKeyMutation = api.user.setOpenRouterKey.useMutation({
+    onSuccess: () => {
+      setValidationError("");
+      refetchKeyStatus();
+    },
+    onError: (error) => {
+      setValidationError(error.message);
+    },
+    onSettled: () => {
+      setIsValidating(false);
+    },
+  });
   const deleteApiKeyMutation = api.user.deleteOpenRouterKey.useMutation();
 
-  // Load API key status when dialog opens
-  useEffect(() => {
-    if (isOpen) {
-      refetchKeyStatus();
-    }
-  }, [isOpen, refetchKeyStatus]);
-
-  // Debounced API key validation and saving
-  useEffect(() => {
+  // Handle API key validation on blur
+  const handleApiKeyBlur = async () => {
     if (!apiKey || apiKey.length < 10) {
       setValidationError("");
       return;
     }
 
-    const timeoutId = setTimeout(async () => {
-      setIsValidating(true);
-      setValidationError("");
-
-      try {
-        // Save and validate the API key
-        await setApiKeyMutation.mutateAsync({ apiKey });
-        // Only refetch status after successful save to prevent loops
-        await refetchKeyStatus();
-      } catch (error) {
-        setValidationError(error instanceof Error ? error.message : "Invalid API key");
-      } finally {
-        setIsValidating(false);
-      }
-    }, 1000); // Increased debounce time to reduce API calls
-
-    return () => clearTimeout(timeoutId);
-  }, [apiKey, setApiKeyMutation, refetchKeyStatus]);
+    setIsValidating(true);
+    setValidationError("");
+    
+    try {
+      await setApiKeyMutation.mutateAsync({ apiKey });
+    } catch (error) {
+      // Error handling is done in the mutation's onError callback
+    }
+  };
 
   const handleSignOut = async () => {
     setIsLoading(true);
@@ -172,6 +170,7 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
+              onBlur={handleApiKeyBlur}
               placeholder={keyStatus?.hasApiKey ? "API key is set (enter new key to update)" : "Enter your OpenRouter API key"}
               className="font-mono"
             />

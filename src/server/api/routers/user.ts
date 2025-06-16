@@ -1,3 +1,5 @@
+import "server-only";
+
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { clerkClient } from "@clerk/nextjs/server";
