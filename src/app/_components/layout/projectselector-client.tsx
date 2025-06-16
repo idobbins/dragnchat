@@ -24,7 +24,9 @@ interface ProjectSelectorClientProps {
   projects: Project[];
 }
 
-export function ProjectSelectorClient({ projects }: ProjectSelectorClientProps) {
+export function ProjectSelectorClient({
+  projects,
+}: ProjectSelectorClientProps) {
   // State for search input
   const [searchQuery, setSearchQuery] = useState("");
 

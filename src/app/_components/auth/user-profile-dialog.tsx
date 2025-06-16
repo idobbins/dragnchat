@@ -47,15 +47,23 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
     userData.firstName && userData.lastName
       ? `${userData.firstName[0]}${userData.lastName[0]}`
       : userData.fullName
-      ? userData.fullName.split(' ').map(name => name[0]).join('').slice(0, 2).toUpperCase()
-      : "?";
+        ? userData.fullName
+            .split(" ")
+            .map((name) => name[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase()
+        : "?";
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <div className="relative">
           <Avatar className="h-8 w-8 hover:cursor-pointer">
-            <AvatarImage src={userData.imageUrl} alt={userData.fullName ?? ""} />
+            <AvatarImage
+              src={userData.imageUrl}
+              alt={userData.fullName ?? ""}
+            />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div
@@ -72,7 +80,10 @@ export function UserProfileDialog({ userData }: UserProfileDialogProps) {
         </DialogHeader>
         <div className="flex flex-col items-center py-4">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={userData.imageUrl} alt={userData.fullName ?? ""} />
+            <AvatarImage
+              src={userData.imageUrl}
+              alt={userData.fullName ?? ""}
+            />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <h3 className="mt-4 text-lg font-medium">{userData.fullName}</h3>

@@ -42,9 +42,9 @@ const defaultNodes: CustomNode[] = [
 ];
 const defaultEdges: CustomEdge[] = [{ id: "e1-2", source: "1", target: "2" }];
 
-export function Editor({ 
-  initialNodes = defaultNodes, 
-  initialEdges = defaultEdges 
+export function Editor({
+  initialNodes = defaultNodes,
+  initialEdges = defaultEdges,
 }: EditorProps): React.ReactElement {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);

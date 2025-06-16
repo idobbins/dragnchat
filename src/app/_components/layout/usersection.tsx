@@ -1,5 +1,8 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { experimental_taintObjectReference, experimental_taintUniqueValue } from "react";
+import {
+  experimental_taintObjectReference,
+  experimental_taintUniqueValue,
+} from "react";
 import { SignInDropdown } from "../auth/signin-dropdown";
 import { UserProfileDialog } from "../auth/user-profile-dialog";
 
@@ -14,19 +17,18 @@ export async function UserSection({ isSignedIn }: UserSectionProps) {
   if (user) {
     // Taint the entire user object first - this is our primary defense
     experimental_taintObjectReference(
-      'Clerk user object contains sensitive data. Use safeUserData instead.',
-      user
+      "Clerk user object contains sensitive data. Use safeUserData instead.",
+      user,
     );
 
     // Taint sensitive string values individually
     if (user.id) {
       experimental_taintUniqueValue(
-        'User ID should not be exposed to client',
+        "User ID should not be exposed to client",
         user,
-        user.id
+        user.id,
       );
     }
-
 
     // Taint complex objects by reference
     const sensitiveObjects = [
@@ -41,21 +43,23 @@ export async function UserSection({ isSignedIn }: UserSectionProps) {
     sensitiveObjects.forEach((obj) => {
       if (obj != null) {
         experimental_taintObjectReference(
-          'Sensitive user data object should not be exposed to client',
-          obj
+          "Sensitive user data object should not be exposed to client",
+          obj,
         );
       }
     });
   }
 
   // Create completely new safe object with only explicitly allowed fields
-  const safeUserData = user ? {
-    firstName: user.firstName,
-    lastName: user.lastName,
-    fullName: user.fullName,
-    imageUrl: user.imageUrl,
-    primaryEmailAddress: user.primaryEmailAddress?.emailAddress ?? null,
-  } : null;
+  const safeUserData = user
+    ? {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        fullName: user.fullName,
+        imageUrl: user.imageUrl,
+        primaryEmailAddress: user.primaryEmailAddress?.emailAddress ?? null,
+      }
+    : null;
 
   return (
     <div className="flex items-center gap-4">
