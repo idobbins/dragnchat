@@ -17,7 +17,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ isSignedIn }: AppHeaderProps) {
   return (
-    <div className="z-10 flex items-center justify-between p-4">
+    <div className="z-10 flex justify-between p-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
