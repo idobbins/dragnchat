@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useClerk, useUser } from "@clerk/nextjs";
+import { useClerk } from "@clerk/nextjs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,23 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, Loader2, LogOut, XCircle } from "lucide-react";
 
-export function UserProfileDialog() {
+interface UserData {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  fullName: string | null;
+  imageUrl: string;
+  primaryEmailAddress: string | null;
+}
+
+interface UserProfileDialogProps {
+  userData: UserData;
+}
+
+export function UserProfileDialog({ userData }: UserProfileDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiKey, setApiKey] = useState("");
-  const { user } = useUser();
   const { signOut } = useClerk();
 
   const handleSignOut = async () => {
@@ -31,19 +43,18 @@ export function UserProfileDialog() {
     setIsOpen(false);
   };
 
-  if (!user) return null;
-
+  // Calculate initials from server-provided user data
   const initials =
-    user.firstName && user.lastName
-      ? `${user.firstName[0]}${user.lastName[0]}`
-      : (user.emailAddresses[0]?.emailAddress?.[0] ?? "?");
+    userData.firstName && userData.lastName
+      ? `${userData.firstName[0]}${userData.lastName[0]}`
+      : (userData.primaryEmailAddress?.[0] ?? "?");
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <div className="relative">
           <Avatar className="h-8 w-8 hover:cursor-pointer">
-            <AvatarImage src={user.imageUrl} alt={user.fullName ?? ""} />
+            <AvatarImage src={userData.imageUrl} alt={userData.fullName ?? ""} />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div
@@ -60,12 +71,12 @@ export function UserProfileDialog() {
         </DialogHeader>
         <div className="flex flex-col items-center py-4">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={user.imageUrl} alt={user.fullName ?? ""} />
+            <AvatarImage src={userData.imageUrl} alt={userData.fullName ?? ""} />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
-          <h3 className="mt-4 text-lg font-medium">{user.fullName}</h3>
+          <h3 className="mt-4 text-lg font-medium">{userData.fullName}</h3>
           <p className="text-muted-foreground text-sm">
-            {user.primaryEmailAddress?.emailAddress}
+            {userData.primaryEmailAddress}
           </p>
         </div>
         <Separator />

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useCallback, useRef, useState } from "react";
 import {
   ReactFlow,
@@ -29,13 +31,21 @@ interface NodeData extends Record<string, unknown> {
 type CustomNode = Node<NodeData>;
 type CustomEdge = Edge;
 
-const initialNodes: CustomNode[] = [
+interface EditorProps {
+  initialNodes?: CustomNode[];
+  initialEdges?: CustomEdge[];
+}
+
+const defaultNodes: CustomNode[] = [
   { id: "1", position: { x: 100, y: 100 }, data: { label: "1" } },
   { id: "2", position: { x: 100, y: 200 }, data: { label: "2" } },
 ];
-const initialEdges: CustomEdge[] = [{ id: "e1-2", source: "1", target: "2" }];
+const defaultEdges: CustomEdge[] = [{ id: "e1-2", source: "1", target: "2" }];
 
-export function Editor(): React.ReactElement {
+export function Editor({ 
+  initialNodes = defaultNodes, 
+  initialEdges = defaultEdges 
+}: EditorProps): React.ReactElement {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [contextMenuPosition, setContextMenuPosition] = useState<{
