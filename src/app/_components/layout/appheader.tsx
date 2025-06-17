@@ -30,11 +30,13 @@ export function AppHeader({ isSignedIn, showProjectSelector = true }: AppHeaderP
               />
             </BreadcrumbLink>
           </BreadcrumbItem>
-          <BreadcrumbSeparator className="text-foreground" />
+          {showProjectSelector && <BreadcrumbSeparator className="text-foreground" />}
           <BreadcrumbItem className="text-foreground">
-            <div className="text-lg hover:cursor-default">
-              {isSignedIn ? "Project 1" : "Demo"}
-            </div>
+            {showProjectSelector && (
+              <div className="text-lg hover:cursor-default">
+                {isSignedIn ? "Project 1" : "Demo"}
+              </div>
+            )}
             {showProjectSelector && <ProjectSelector />}
           </BreadcrumbItem>
         </BreadcrumbList>
