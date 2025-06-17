@@ -30,7 +30,6 @@ import { api } from "@/trpc/react";
 import { useOpenRouterModels } from "@/stores/openrouter-store";
 import type { OpenRouterModel } from "@/server/api/routers/openrouter";
 
-// Type definitions for better state management
 type ApiKeyStatus = "NOT_SET" | "VALIDATING" | "VALID" | "INVALID";
 type ButtonAction = "SAVE" | "DELETE" | "LOADING";
 
@@ -69,7 +68,6 @@ export function UserProfileDialog({
   const [isPendingSuccess, setIsPendingSuccess] = useState<boolean>(false);
   const { signOut } = useClerk();
 
-  // OpenRouter models cache
   const {
     models,
     lastFetched,
@@ -115,9 +113,6 @@ export function UserProfileDialog({
     },
   });
 
-  /**
-   * Handle saving/updating the API key
-   */
   const handleSaveApiKey = async (): Promise<void> => {
     if (!apiKey || apiKey.length < 10) {
       setValidationError("API key must be at least 10 characters");
@@ -134,9 +129,6 @@ export function UserProfileDialog({
     }
   };
 
-  /**
-   * Handle deleting the existing API key
-   */
   const handleDeleteApiKey = async (): Promise<void> => {
     try {
       await deleteApiKeyMutation.mutateAsync();
@@ -145,9 +137,6 @@ export function UserProfileDialog({
     }
   };
 
-  /**
-   * Handle sign out action
-   */
   const handleSignOut = async (): Promise<void> => {
     setIsLoading(true);
     await signOut();
@@ -155,12 +144,8 @@ export function UserProfileDialog({
     setIsOpen(false);
   };
 
-  // Use server-computed initials for better SSR performance
   const initials = userData.initials;
 
-  /**
-   * Derive API key status for cleaner state management
-   */
   const getApiKeyStatus = (): ApiKeyStatus => {
     if (isValidating) return "VALIDATING";
     if (validationError) return "INVALID";
@@ -170,9 +155,6 @@ export function UserProfileDialog({
     return "NOT_SET";
   };
 
-  /**
-   * Get the current API key state
-   */
   const getApiKeyState = (): ApiKeyState => {
     const status = getApiKeyStatus();
     return {
@@ -183,9 +165,6 @@ export function UserProfileDialog({
     };
   };
 
-  /**
-   * Determine what action the button should perform
-   */
   const getButtonAction = (state: ApiKeyState): ButtonAction => {
     if (
       isValidating ||
@@ -202,9 +181,6 @@ export function UserProfileDialog({
     return "SAVE";
   };
 
-  /**
-   * Get the appropriate placeholder text
-   */
   const getPlaceholderText = (state: ApiKeyState): string => {
     if (state.hasExistingKey) {
       return "Update API key";
@@ -212,9 +188,6 @@ export function UserProfileDialog({
     return "Enter your OpenRouter API key";
   };
 
-  /**
-   * Handle input change with validation error clearing
-   */
   const handleApiKeyChange = (value: string): void => {
     setApiKey(value);
     if (validationError && value !== apiKey) {
@@ -222,9 +195,6 @@ export function UserProfileDialog({
     }
   };
 
-  /**
-   * Handle button click based on current action
-   */
   const handleButtonClick = async (): Promise<void> => {
     const action = getButtonAction(apiKeyState);
 
@@ -295,30 +265,30 @@ export function UserProfileDialog({
                 switch (apiKeyState.status) {
                   case "VALIDATING":
                     return (
-                      <Badge variant="secondary">
-                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      <Badge variant="secondary" className="flex gap-1">
+                        <Loader2 className="h-3 w-3 animate-spin" />
                         Validating...
                       </Badge>
                     );
                   case "VALID":
                     return (
-                      <Badge variant="default" className="bg-green-600">
-                        <CheckCircle2 className="mr-1 h-3 w-3" />
+                      <Badge variant="default" className="bg-green-600 flex gap-1">
+                        <CheckCircle2 className="h-3 w-3" />
                         Connected
                       </Badge>
                     );
                   case "INVALID":
                     return (
-                      <Badge variant="destructive">
-                        <XCircle className="mr-1 h-3 w-3" />
+                      <Badge variant="destructive" className="flex gap-1">
+                        <XCircle className="h-3 w-3" />
                         Invalid
                       </Badge>
                     );
                   case "NOT_SET":
                   default:
                     return (
-                      <Badge variant="outline">
-                        <Minus className="mr-1 h-3 w-3" />
+                      <Badge variant="outline" className="flex gap-1">
+                        <Minus className="h-3 w-3" />
                         Not Set
                       </Badge>
                     );
@@ -383,16 +353,16 @@ export function UserProfileDialog({
                   {(() => {
                     if (modelsLoading) {
                       return (
-                        <Badge variant="secondary">
-                          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                        <Badge variant="secondary" className="flex gap-1">
+                          <Loader2 className="h-3 w-3 animate-spin" />
                           Refreshing...
                         </Badge>
                       );
                     }
                     if (modelsError) {
                       return (
-                        <Badge variant="destructive">
-                          <XCircle className="mr-1 h-3 w-3" />
+                        <Badge variant="destructive" className="flex gap-1">
+                          <XCircle className="h-3 w-3" />
                           Error
                         </Badge>
                       );
@@ -401,18 +371,16 @@ export function UserProfileDialog({
                       return (
                         <Badge
                           variant="default"
-                          className={
-                            isExpired ? "bg-orange-600" : "bg-green-600"
-                          }
+                          className={`flex gap-1 ${isExpired ? "bg-orange-600" : "bg-green-600"}`}
                         >
-                          <CheckCircle2 className="mr-1 h-3 w-3" />
+                          <CheckCircle2 className="h-3 w-3" />
                           {models.length} models {isExpired ? "(expired)" : ""}
                         </Badge>
                       );
                     }
                     return (
-                      <Badge variant="outline">
-                        <Minus className="mr-1 h-3 w-3" />
+                      <Badge variant="outline" className="flex gap-1">
+                        <Minus className="h-3 w-3" />
                         No cache
                       </Badge>
                     );
@@ -437,12 +405,12 @@ export function UserProfileDialog({
                       }
                     }}
                     disabled={modelsLoading}
-                    className="h-7"
+                    className="h-7 flex gap-1"
                   >
                     {modelsLoading ? (
-                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      <Loader2 className="h-3 w-3 animate-spin" />
                     ) : (
-                      <RefreshCw className="mr-1 h-3 w-3" />
+                      <RefreshCw className="h-3 w-3" />
                     )}
                     Refresh
                   </Button>
@@ -461,14 +429,14 @@ export function UserProfileDialog({
 
           <Button
             variant="outline"
-            className="text-destructive hover:text-destructive mt-2 justify-start"
+            className="text-destructive hover:text-destructive justify-start flex gap-2"
             onClick={handleSignOut}
             disabled={isLoading}
           >
             {isLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <LogOut className="mr-2 h-4 w-4" />
+              <LogOut className="h-4 w-4" />
             )}
             Sign out
           </Button>

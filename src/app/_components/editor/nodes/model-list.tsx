@@ -154,13 +154,13 @@ export const ModelList = React.memo(({
       />
       <CommandList>
         {isLoading ? (
-          <div className="flex items-center justify-center p-4">
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          <div className="flex items-center justify-center p-4 gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
             <span className="text-sm text-gray-500">Loading models...</span>
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center p-4">
-            <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
+          <div className="flex items-center justify-center p-4 gap-2">
+            <AlertCircle className="h-4 w-4 text-red-500" />
             <span className="text-sm text-red-500">Failed to load models</span>
           </div>
         ) : (

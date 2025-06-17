@@ -52,28 +52,6 @@ export function SignInDropdown() {
                       </Clerk.Loading>
                     </Button>
                   </Clerk.Connection>
-
-                  {/* <Clerk.Connection name="github" asChild>
-                    <Button
-                      variant="outline"
-                      type="button"
-                      className="flex w-full items-center hover:cursor-pointer"
-                      disabled={isGlobalLoading}
-                    >
-                      <Clerk.Loading scope="provider:github">
-                        {(isLoading) =>
-                          isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <>
-                              <IconBrandGithubFilled className="h-4 w-4" />
-                              Sign in with GitHub
-                            </>
-                          )
-                        }
-                      </Clerk.Loading>
-                    </Button>
-                  </Clerk.Connection> */}
                 </div>
               </SignIn.Step>
             )}
