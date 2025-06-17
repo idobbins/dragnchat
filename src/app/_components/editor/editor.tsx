@@ -12,6 +12,8 @@ import {
 import type { Node, Edge, Connection } from "@xyflow/react";
 import { ModelSelectionNode } from "./nodes/model-selection-node";
 import type { ModelSelectionNodeData } from "./nodes/model-selection-node";
+import { TextInputNode } from "./nodes/text-input-node";
+import type { TextInputNodeData } from "./nodes/text-input-node";
 import {
   CommandDialog,
   CommandInput,
@@ -28,12 +30,13 @@ interface NodeData extends Record<string, unknown> {
   label: string;
 }
 
-type CustomNode = Node<NodeData | ModelSelectionNodeData>;
+type CustomNode = Node<NodeData | ModelSelectionNodeData | TextInputNodeData>;
 type CustomEdge = Edge;
 
 // Define node types for React Flow
 const nodeTypes = {
   modelSelection: ModelSelectionNode,
+  textInput: TextInputNode,
 };
 
 interface EditorProps {
@@ -60,7 +63,7 @@ export function Editor({
 
   // Handle node data changes
   const handleNodeDataChange = useCallback(
-    (nodeId: string, newData: NodeData | ModelSelectionNodeData) => {
+    (nodeId: string, newData: NodeData | ModelSelectionNodeData | TextInputNodeData) => {
       setNodes((nds) =>
         nds.map((node) =>
           node.id === nodeId ? { ...node, data: newData } : node
@@ -102,6 +105,13 @@ export function Editor({
           type: "modelSelection",
           position: { x: centerX, y: centerY },
           data: { label },
+        };
+      } else if (nodeType === "text" && category === "input") {
+        newNode = {
+          id,
+          type: "textInput",
+          position: { x: centerX, y: centerY },
+          data: { label, text: "", width: 300, height: 200 },
         };
       } else {
         newNode = {
