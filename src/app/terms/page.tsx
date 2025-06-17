@@ -13,7 +13,7 @@ export default async function TermsPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <AppHeader isSignedIn={isSignedIn} />
+      <AppHeader isSignedIn={isSignedIn} showProjectSelector={false} />
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <div className="mb-8">
           <Link 

@@ -15,9 +15,25 @@ export default async function Home() {
       <main className="relative flex h-screen w-screen flex-col">
         <AppHeader isSignedIn={isSignedIn} />
         <Editor />
-        {/* Server-rendered health status - demonstrates SSR data fetching */}
-        <div className="text-muted-foreground absolute right-4 bottom-4 text-xs">
-          Server Status: {health.message}
+
+        {/* Legal links footer */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
+          <p className="text-muted-foreground text-sm">
+            Make sure you agree to our{" "}
+            <a 
+              href="/terms" 
+              className="text-primary hover:text-primary/80 underline underline-offset-4"
+            >
+              Terms
+            </a>
+            {" "}and our{" "}
+            <a 
+              href="/privacy" 
+              className="text-primary hover:text-primary/80 underline underline-offset-4"
+            >
+              Privacy Policy
+            </a>
+          </p>
         </div>
       </main>
     </HydrateClient>

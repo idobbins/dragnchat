@@ -11,9 +11,10 @@ import Image from "next/image";
 
 interface AppHeaderProps {
   isSignedIn: boolean;
+  showProjectSelector?: boolean;
 }
 
-export function AppHeader({ isSignedIn }: AppHeaderProps) {
+export function AppHeader({ isSignedIn, showProjectSelector = true }: AppHeaderProps) {
   return (
     <div className="z-10 flex justify-between p-4">
       <Breadcrumb>
@@ -34,7 +35,7 @@ export function AppHeader({ isSignedIn }: AppHeaderProps) {
             <div className="text-lg hover:cursor-default">
               {isSignedIn ? "Project 1" : "Demo"}
             </div>
-            <ProjectSelector />
+            {showProjectSelector && <ProjectSelector />}
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
