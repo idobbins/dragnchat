@@ -5,7 +5,6 @@ import * as SignIn from "@clerk/elements/sign-in";
 import { Button } from "@/components/ui/button";
 import {
   IconBrandGoogleFilled,
-  IconBrandGithubFilled,
 } from "@tabler/icons-react";
 import { Loader2 } from "lucide-react";
 import {

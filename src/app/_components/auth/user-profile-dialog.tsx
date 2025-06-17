@@ -77,7 +77,6 @@ export function UserProfileDialog({
     error: modelsError,
     isExpired,
     refreshModels,
-    clearCache,
   } = useOpenRouterModels(initialModels);
 
   // tRPC hooks - use initial data and only fetch when dialog is open

@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Handle, Position } from "@xyflow/react";
-import type { NodeProps } from "@xyflow/react";
 import { Textarea } from "@/components/ui/textarea";
 
 export interface TextInputNodeData extends Record<string, unknown> {
@@ -21,10 +20,10 @@ interface TextInputNodeProps {
 }
 
 export function TextInputNode({ data, id }: TextInputNodeProps) {
-  const [text, setText] = useState(data.text || "");
+  const [text, setText] = useState(data.text ?? "");
   const [dimensions, setDimensions] = useState({
-    width: data.width || 300,
-    height: data.height || 200,
+    width: data.width ?? 300,
+    height: data.height ?? 200,
   });
   const nodeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);

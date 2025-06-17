@@ -8,7 +8,6 @@ import {
 import { Flame } from "lucide-react";
 import { ProjectSelector } from "./projectselector";
 import { UserSection } from "./usersection";
-import { HelpPopover } from "./help-popover";
 
 interface AppHeaderProps {
   isSignedIn: boolean;

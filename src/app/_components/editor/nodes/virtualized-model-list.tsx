@@ -19,10 +19,8 @@ const groupModelsByProvider = (models: OpenRouterModel[]) => {
   const groups: Record<string, OpenRouterModel[]> = {};
   
   models.forEach((model) => {
-    const provider = model.id.split('/')[0] || 'Other';
-    if (!groups[provider]) {
-      groups[provider] = [];
-    }
+    const provider = model.id.split('/')[0] ?? 'Other';
+    groups[provider] ??= [];
     groups[provider].push(model);
   });
   

@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback, useRef } from "react";
 import { Handle, Position } from "@xyflow/react";
-import type { NodeProps } from "@xyflow/react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ChevronDown } from "lucide-react";
