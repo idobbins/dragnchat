@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ChevronDown } from "lucide-react";
 import { useOpenRouterModels } from "@/stores/openrouter-store";
 import type { OpenRouterModel } from "@/server/api/routers/openrouter";
-import { VirtualizedModelList } from "./virtualized-model-list";
+import { VirtualizedModelCommand } from "./virtualized-model-command";
 
 export interface ModelSelectionNodeData extends Record<string, unknown> {
   selectedModel?: OpenRouterModel;
@@ -62,17 +62,17 @@ export function ModelSelectionNode({ data, id }: ModelSelectionNodeProps) {
   const selectedModel = data.selectedModel;
 
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm min-w-[200px] hover:border-gray-300 transition-colors">
+    <div className="bg-card border-2 border-border rounded-lg shadow-sm min-w-[200px] hover:border-ring transition-colors">
       {/* Input Handle - Left */}
       <Handle
         type="target"
         position={Position.Left}
-        className="w-3 h-3 bg-blue-500 border-2 border-white"
+        className="w-3 h-3 bg-blue-500 border-2 border-background"
       />
       
       {/* Node Content */}
       <div className="p-3">
-        <div className="text-xs font-medium text-gray-500 mb-2">Model Selection</div>
+        <div className="text-xs font-medium text-muted-foreground mb-2">Model Selection</div>
         
         <Popover open={open} onOpenChange={handleOpenChange}>
           <PopoverTrigger asChild>
@@ -86,10 +86,10 @@ export function ModelSelectionNode({ data, id }: ModelSelectionNodeProps) {
               {selectedModel ? (
                 <div className="flex flex-col items-start">
                   <span className="font-medium">{selectedModel.name}</span>
-                  <span className="text-xs text-gray-500">{formatPricing(selectedModel)}</span>
+                  <span className="text-xs text-muted-foreground">{formatPricing(selectedModel)}</span>
                 </div>
               ) : (
-                <span className="text-gray-500">Select model...</span>
+                <span className="text-muted-foreground">Select model...</span>
               )}
               <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
@@ -97,14 +97,15 @@ export function ModelSelectionNode({ data, id }: ModelSelectionNodeProps) {
           
           <PopoverContent className="w-[400px] p-0" align="start">
             {models && models.length > 0 ? (
-              <VirtualizedModelList
+              <VirtualizedModelCommand
                 models={models}
                 selectedModelId={selectedModel?.id}
                 onModelSelect={handleModelSelect}
                 searchPlaceholder="Search models..."
+                height={400}
               />
             ) : (
-              <div className="flex items-center justify-center p-8 text-gray-500">
+              <div className="flex items-center justify-center p-8 text-muted-foreground">
                 No models available
               </div>
             )}
@@ -112,7 +113,7 @@ export function ModelSelectionNode({ data, id }: ModelSelectionNodeProps) {
         </Popover>
         
         {selectedModel && (
-          <div className="mt-2 text-xs text-gray-500">
+          <div className="mt-2 text-xs text-muted-foreground">
             Context: {selectedModel.context_length.toLocaleString()} tokens
           </div>
         )}
