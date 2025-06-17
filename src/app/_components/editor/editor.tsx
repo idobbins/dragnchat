@@ -10,6 +10,8 @@ import {
   addEdge,
 } from "@xyflow/react";
 import type { Node, Edge, Connection } from "@xyflow/react";
+import { ModelSelectionNode } from "./nodes/model-selection-node";
+import type { ModelSelectionNodeData } from "./nodes/model-selection-node";
 import {
   CommandDialog,
   CommandInput,
@@ -26,19 +28,21 @@ interface NodeData extends Record<string, unknown> {
   label: string;
 }
 
-type CustomNode = Node<NodeData>;
+type CustomNode = Node<NodeData | ModelSelectionNodeData>;
 type CustomEdge = Edge;
+
+// Define node types for React Flow
+const nodeTypes = {
+  modelSelection: ModelSelectionNode,
+};
 
 interface EditorProps {
   initialNodes?: CustomNode[];
   initialEdges?: CustomEdge[];
 }
 
-const defaultNodes: CustomNode[] = [
-  { id: "1", position: { x: 100, y: 100 }, data: { label: "1" } },
-  { id: "2", position: { x: 100, y: 200 }, data: { label: "2" } },
-];
-const defaultEdges: CustomEdge[] = [{ id: "e1-2", source: "1", target: "2" }];
+const defaultNodes: CustomNode[] = [];
+const defaultEdges: CustomEdge[] = [];
 
 export function Editor({
   initialNodes = defaultNodes,
@@ -52,6 +56,18 @@ export function Editor({
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges],
+  );
+
+  // Handle node data changes
+  const handleNodeDataChange = useCallback(
+    (nodeId: string, newData: NodeData | ModelSelectionNodeData) => {
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === nodeId ? { ...node, data: newData } : node
+        )
+      );
+    },
+    [setNodes]
   );
 
   // Keyboard shortcut handler
@@ -69,20 +85,31 @@ export function Editor({
 
   // Function to create a new node with smart positioning
   const createNode = useCallback(
-    (type: string, category: string, label: string) => {
+    (nodeType: string, category: string, label: string) => {
       // Simple center positioning with small random offset to avoid overlapping
       const centerX = 400 + Math.random() * 100 - 50; // Random offset between -50 and 50
       const centerY = 300 + Math.random() * 100 - 50;
 
       // Generate a unique ID
-      const id = `${category}-${type}-${Date.now()}`;
+      const id = `${category}-${nodeType}-${Date.now()}`;
 
-      // Create the new node
-      const newNode: CustomNode = {
-        id,
-        position: { x: centerX, y: centerY },
-        data: { label: `${label}` },
-      };
+      // Create the new node based on type
+      let newNode: CustomNode;
+      
+      if (nodeType === "modelSelection") {
+        newNode = {
+          id,
+          type: "modelSelection",
+          position: { x: centerX, y: centerY },
+          data: { label },
+        };
+      } else {
+        newNode = {
+          id,
+          position: { x: centerX, y: centerY },
+          data: { label },
+        };
+      }
 
       // Add the new node to the existing nodes
       setNodes((nds) => [...nds, newNode]);
@@ -91,15 +118,25 @@ export function Editor({
     [setNodes],
   );
 
+  // Add onDataChange to all nodes
+  const nodesWithCallbacks = nodes.map((node) => ({
+    ...node,
+    data: {
+      ...node.data,
+      onDataChange: handleNodeDataChange,
+    },
+  }));
+
   return (
     <div className="absolute top-0 left-0 h-screen w-screen">
       <ReactFlow
         ref={reactFlowRef}
-        nodes={nodes}
+        nodes={nodesWithCallbacks}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        nodeTypes={nodeTypes}
       >
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
       </ReactFlow>
@@ -135,7 +172,10 @@ export function Editor({
 
           <CommandSeparator />
 
-          <CommandGroup heading="Model Node">
+          <CommandGroup heading="Model Nodes">
+            <CommandItem onSelect={() => createNode("modelSelection", "model", "Model Selection")}>
+              Model Selection
+            </CommandItem>
             <CommandItem onSelect={() => createNode("model", "model", "Model")}>
               Model (Generic)
             </CommandItem>
