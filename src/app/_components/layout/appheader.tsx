@@ -5,9 +5,9 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Flame } from "lucide-react";
 import { ProjectSelector } from "./projectselector";
 import { UserSection } from "./usersection";
+import Image from "next/image";
 
 interface AppHeaderProps {
   isSignedIn: boolean;
@@ -20,7 +20,13 @@ export function AppHeader({ isSignedIn }: AppHeaderProps) {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink href="/" className="text-foreground">
-              <Flame />
+              <Image 
+                src="/dragnchat.svg" 
+                alt="DragnChat Logo" 
+                width={32}
+                height={32}
+                className="w-8 h-8"
+              />
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="text-foreground" />

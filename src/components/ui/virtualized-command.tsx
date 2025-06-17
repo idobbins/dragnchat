@@ -172,7 +172,7 @@ function VirtualizedCommandList({
               }}
             >
               {item.type === 'group' ? (
-                <VirtualizedCommandGroup heading={item.groupHeading!} />
+                <VirtualizedCommandGroup heading={item.groupHeading} />
               ) : (
                 <VirtualizedCommandItem
                   value={item.value}

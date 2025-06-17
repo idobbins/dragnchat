@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -138,9 +138,6 @@ export const VirtualizedModelCommand = React.memo(({
     return createVirtualItems(filteredGroupedModels, selectedModelId, onModelSelect);
   }, [filteredGroupedModels, selectedModelId, onModelSelect]);
 
-  const handleModelSelect = useCallback((model: OpenRouterModel) => {
-    onModelSelect(model);
-  }, [onModelSelect]);
 
   return (
     <VirtualizedCommand className="h-full">

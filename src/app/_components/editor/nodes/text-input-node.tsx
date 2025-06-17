@@ -27,6 +27,7 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
   });
   const nodeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
+  const resizeDimensions = useRef(dimensions);
 
   // Handle text changes
   const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -37,35 +38,25 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
     const newData = {
       ...data,
       text: newText,
-      width: dimensions.width,
-      height: dimensions.height,
+      width: resizeDimensions.current.width,
+      height: resizeDimensions.current.height,
     };
     
     if (data.onDataChange) {
       data.onDataChange(id, newData);
     }
-  }, [data, id, dimensions]);
+  }, [data, id]);
 
   // Handle resize functionality
-  const handleMouseDown = (e: React.MouseEvent) => {
-    const node = nodeRef.current;
-    if (!node) return;
-
-    const rect = node.getBoundingClientRect();
-    const isInResizeArea = 
-      e.clientX > rect.right - 20 && 
-      e.clientY > rect.bottom - 20;
-
-    if (!isInResizeArea) return;
-
+  const handleResizeMouseDown = (e: React.MouseEvent) => {
     isResizing.current = true;
     e.preventDefault();
     e.stopPropagation();
 
     const startX = e.clientX;
     const startY = e.clientY;
-    const startWidth = dimensions.width;
-    const startHeight = dimensions.height;
+    const startWidth = resizeDimensions.current.width;
+    const startHeight = resizeDimensions.current.height;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing.current) return;
@@ -73,19 +64,21 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
       const newWidth = Math.max(250, startWidth + (e.clientX - startX));
       const newHeight = Math.max(150, startHeight + (e.clientY - startY));
 
-      setDimensions({ width: newWidth, height: newHeight });
+      const newDimensions = { width: newWidth, height: newHeight };
+      resizeDimensions.current = newDimensions;
+      setDimensions(newDimensions);
     };
 
     const handleMouseUp = () => {
       if (isResizing.current) {
         isResizing.current = false;
         
-        // Update node data with new dimensions
+        // Update node data with final dimensions
         const newData = {
           ...data,
           text,
-          width: dimensions.width,
-          height: dimensions.height,
+          width: resizeDimensions.current.width,
+          height: resizeDimensions.current.height,
         };
         
         if (data.onDataChange) {
@@ -111,7 +104,6 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
         minWidth: 250,
         minHeight: 150,
       }}
-      onMouseDown={handleMouseDown}
     >
       
       {/* Node Content */}
@@ -133,15 +125,16 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3 h-3 bg-green-500 border-2 border-white"
+        className="!w-3 !h-3 !bg-green-500 !border-2 !border-white"
       />
       
       {/* Resize Handle */}
       <div 
-        className="absolute bottom-0 right-0 w-3 h-3 cursor-se-resize"
+        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize opacity-60 hover:opacity-100 transition-opacity"
         style={{
           background: 'linear-gradient(-45deg, transparent 30%, #9ca3af 30%, #9ca3af 40%, transparent 40%, transparent 60%, #9ca3af 60%, #9ca3af 70%, transparent 70%)',
         }}
+        onMouseDown={handleResizeMouseDown}
       />
     </div>
   );

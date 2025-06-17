@@ -67,7 +67,7 @@ export function ModelSelectionNode({ data, id }: ModelSelectionNodeProps) {
       <Handle
         type="target"
         position={Position.Left}
-        className="w-3 h-3 bg-blue-500 border-2 border-background"
+        className="!w-3 !h-3 !bg-blue-500 !border-2 !border-background"
       />
       
       {/* Node Content */}
@@ -123,7 +123,7 @@ export function ModelSelectionNode({ data, id }: ModelSelectionNodeProps) {
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3 h-3 bg-green-500 border-2 border-white"
+        className="!w-3 !h-3 !bg-green-500 !border-2 !border-white"
       />
     </div>
   );

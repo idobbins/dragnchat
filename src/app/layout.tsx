@@ -10,7 +10,7 @@ import { TRPCReactProvider } from "@/trpc/react";
 export const metadata: Metadata = {
   title: "DragnChat",
   description: "Drag'n'drop Node-based Chat with OpenRouter LLMs",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: [{ rel: "icon", url: "/dragnchat.svg" }],
 };
 
 const geist = Geist({
