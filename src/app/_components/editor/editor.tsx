@@ -14,6 +14,8 @@ import { ModelSelectionNode } from "./nodes/model-selection-node";
 import type { ModelSelectionNodeData } from "./nodes/model-selection-node";
 import { TextInputNode } from "./nodes/text-input-node";
 import type { TextInputNodeData } from "./nodes/text-input-node";
+import { TextOutputNode } from "./nodes/text-output-node";
+import type { TextOutputNodeData } from "./nodes/text-output-node";
 import {
   CommandDialog,
   CommandInput,
@@ -30,13 +32,14 @@ interface NodeData extends Record<string, unknown> {
   label: string;
 }
 
-type CustomNode = Node<NodeData | ModelSelectionNodeData | TextInputNodeData>;
+type CustomNode = Node<NodeData | ModelSelectionNodeData | TextInputNodeData | TextOutputNodeData>;
 type CustomEdge = Edge;
 
 // Define node types for React Flow
 const nodeTypes = {
   modelSelection: ModelSelectionNode,
   textInput: TextInputNode,
+  textOutput: TextOutputNode,
 };
 
 interface EditorProps {
@@ -63,7 +66,7 @@ export function Editor({
 
   // Handle node data changes
   const handleNodeDataChange = useCallback(
-    (nodeId: string, newData: NodeData | ModelSelectionNodeData | TextInputNodeData) => {
+    (nodeId: string, newData: NodeData | ModelSelectionNodeData | TextInputNodeData | TextOutputNodeData) => {
       setNodes((nds) =>
         nds.map((node) =>
           node.id === nodeId ? { ...node, data: newData } : node
@@ -110,6 +113,13 @@ export function Editor({
         newNode = {
           id,
           type: "textInput",
+          position: { x: centerX, y: centerY },
+          data: { label, text: "", width: 300, height: 200 },
+        };
+      } else if (nodeType === "text" && category === "output") {
+        newNode = {
+          id,
+          type: "textOutput",
           position: { x: centerX, y: centerY },
           data: { label, text: "", width: 300, height: 200 },
         };
@@ -163,7 +173,7 @@ export function Editor({
             >
               Text Input
             </CommandItem>
-            <CommandItem
+            {/* <CommandItem
               onSelect={() => createNode("file", "input", "File Input")}
             >
               File Input
@@ -177,7 +187,7 @@ export function Editor({
               onSelect={() => createNode("url", "input", "URL Input")}
             >
               URL Input
-            </CommandItem>
+            </CommandItem> */}
           </CommandGroup>
 
           <CommandSeparator />
@@ -186,9 +196,9 @@ export function Editor({
             <CommandItem onSelect={() => createNode("modelSelection", "model", "Model Selection")}>
               Model Selection
             </CommandItem>
-            <CommandItem onSelect={() => createNode("model", "model", "Model")}>
+            {/* <CommandItem onSelect={() => createNode("model", "model", "Model")}>
               Model (Generic)
-            </CommandItem>
+            </CommandItem> */}
           </CommandGroup>
 
           <CommandSeparator />
@@ -199,7 +209,7 @@ export function Editor({
             >
               Text Output
             </CommandItem>
-            <CommandItem
+            {/* <CommandItem
               onSelect={() => createNode("image", "output", "Image Output")}
             >
               Image Output
@@ -208,12 +218,12 @@ export function Editor({
               onSelect={() => createNode("file", "output", "File Output")}
             >
               File Output
-            </CommandItem>
+            </CommandItem> */}
           </CommandGroup>
 
           <CommandSeparator />
 
-          <CommandGroup heading="Operator Nodes">
+          {/* <CommandGroup heading="Operator Nodes">
             <CommandItem
               onSelect={() => createNode("merge", "operator", "Merge")}
             >
@@ -224,7 +234,7 @@ export function Editor({
             >
               Diff
             </CommandItem>
-          </CommandGroup>
+          </CommandGroup> */}
         </CommandList>
       </CommandDialog>
 

@@ -1,26 +1,25 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { Textarea } from "@/components/ui/textarea";
 
-export interface TextInputNodeData extends Record<string, unknown> {
+export interface TextOutputNodeData extends Record<string, unknown> {
   text?: string;
   label?: string;
   width?: number;
   height?: number;
-  onDataChange?: (id: string, newData: TextInputNodeData) => void;
+  onDataChange?: (id: string, newData: TextOutputNodeData) => void;
 }
 
-interface TextInputNodeProps {
-  data: TextInputNodeData;
+interface TextOutputNodeProps {
+  data: TextOutputNodeData;
   id: string;
   selected?: boolean;
   dragging?: boolean;
 }
 
-export function TextInputNode({ data, id }: TextInputNodeProps) {
-  const [text, setText] = useState(data.text ?? "");
+export function TextOutputNode({ data, id }: TextOutputNodeProps) {
   const [dimensions, setDimensions] = useState({
     width: data.width ?? 300,
     height: data.height ?? 200,
@@ -28,23 +27,8 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
 
-  // Handle text changes
-  const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newText = e.target.value;
-    setText(newText);
-    
-    // Update node data
-    const newData = {
-      ...data,
-      text: newText,
-      width: dimensions.width,
-      height: dimensions.height,
-    };
-    
-    if (data.onDataChange) {
-      data.onDataChange(id, newData);
-    }
-  }, [data, id, dimensions]);
+  // Display text from connected input or fallback to data.text
+  const displayText = data.text ?? "";
 
   // Handle resize functionality
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -83,7 +67,6 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
         // Update node data with new dimensions
         const newData = {
           ...data,
-          text,
           width: dimensions.width,
           height: dimensions.height,
         };
@@ -113,17 +96,23 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
       }}
       onMouseDown={handleMouseDown}
     >
+      {/* Input Handle - Left */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        className="w-3 h-3 bg-blue-500 border-2 border-white"
+      />
       
       {/* Node Content */}
       <div className="p-3 h-full flex flex-col">
-        <div className="text-xs font-medium text-gray-500 mb-2">Text Input</div>
+        <div className="text-xs font-medium text-gray-500 mb-2">Text Output</div>
         
         <div className="flex-1 relative">
           <Textarea
-            value={text}
-            onChange={handleTextChange}
-            placeholder="Enter your text here..."
-            className="w-full h-full resize-none border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            value={displayText}
+            readOnly
+            placeholder="Text output will appear here..."
+            className="w-full h-full resize-none border-gray-200 bg-gray-50 cursor-default"
             style={{ minHeight: 'calc(100% - 0px)' }}
           />
         </div>
