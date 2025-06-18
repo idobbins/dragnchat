@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useRef } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { CheckCircle, AlertCircle, Loader2, MoveDiagonal2 } from "lucide-react";
 
 export interface TextInputNodeData extends Record<string, unknown> {
   text?: string;
@@ -29,6 +29,7 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
     width: data.width ?? 300,
     height: data.height ?? 200,
   });
+  const [isResizingState, setIsResizingState] = useState(false);
   const nodeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
   const resizeDimensions = useRef(dimensions);
@@ -83,8 +84,14 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
   // Handle resize functionality
   const handleResizeMouseDown = (e: React.MouseEvent) => {
     isResizing.current = true;
+    setIsResizingState(true);
     e.preventDefault();
     e.stopPropagation();
+
+    // Disable pointer events on the node to prevent drag conflicts
+    if (nodeRef.current) {
+      nodeRef.current.style.pointerEvents = 'none';
+    }
 
     const startX = e.clientX;
     const startY = e.clientY;
@@ -93,6 +100,9 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing.current) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
 
       const newWidth = Math.max(250, startWidth + (e.clientX - startX));
       const newHeight = Math.max(150, startHeight + (e.clientY - startY));
@@ -105,6 +115,12 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
     const handleMouseUp = () => {
       if (isResizing.current) {
         isResizing.current = false;
+        setIsResizingState(false);
+        
+        // Re-enable pointer events
+        if (nodeRef.current) {
+          nodeRef.current.style.pointerEvents = 'auto';
+        }
         
         // Update node data with final dimensions
         const newData = {
@@ -130,12 +146,13 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
   return (
     <div 
       ref={nodeRef}
-      className={`bg-white border-2 rounded-lg shadow-sm hover:border-gray-300 transition-colors relative group ${getBorderColor()}`}
+      className={`bg-white border-2 rounded-lg shadow-sm hover:border-gray-300 transition-colors relative group ${getBorderColor()} ${isResizingState ? 'ring-2 ring-blue-300 ring-opacity-50' : ''}`}
       style={{ 
         width: dimensions.width, 
         height: dimensions.height,
         minWidth: 250,
         minHeight: 150,
+        userSelect: isResizingState ? 'none' : 'auto',
       }}
     >
       
@@ -166,12 +183,11 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
       
       {/* Resize Handle */}
       <div 
-        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize opacity-60 hover:opacity-100 transition-opacity"
-        style={{
-          background: 'linear-gradient(-45deg, transparent 30%, #9ca3af 30%, #9ca3af 40%, transparent 40%, transparent 60%, #9ca3af 60%, #9ca3af 70%, transparent 70%)',
-        }}
+        className="absolute -bottom-1 -right-1 w-5 h-5 cursor-se-resize opacity-60 hover:opacity-100 transition-opacity flex items-center justify-center nodrag"
         onMouseDown={handleResizeMouseDown}
-      />
+      >
+        <MoveDiagonal2 className="w-3 h-3 text-gray-500" />
+      </div>
     </div>
   );
 }
