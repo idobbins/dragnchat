@@ -782,14 +782,6 @@ export function Editor({
             <div className="text-sm text-blue-800">
               Sign in to save your work permanently
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onAuthRequired}
-              className="border-blue-300 text-blue-700 hover:bg-blue-100"
-            >
-              Sign In
-            </Button>
           </div>
         </div>
       )}
