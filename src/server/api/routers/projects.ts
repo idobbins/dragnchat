@@ -37,7 +37,7 @@ export const projectsRouter = createTRPCRouter({
         .orderBy(desc(projects.updatedAt));
 
       return userProjects;
-    } catch (error) {
+    } catch {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to fetch projects",
@@ -97,7 +97,7 @@ export const projectsRouter = createTRPCRouter({
           .orderBy(desc(projects.updatedAt));
 
         return matchingProjects;
-      } catch (error) {
+      } catch {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to search projects",
@@ -120,7 +120,7 @@ export const projectsRouter = createTRPCRouter({
           .returning();
 
         return newProject[0];
-      } catch (error) {
+      } catch {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to create project",

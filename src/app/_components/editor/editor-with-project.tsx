@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Editor } from "./editor";
 import { api } from "@/trpc/react";
-import type { CustomNode, CustomEdge } from "./editor";
 
 interface EditorWithProjectProps {
   projectId?: string;
@@ -18,8 +17,6 @@ export function EditorWithProject({
   const { user, isLoaded } = useUser();
   const isAuthenticated = isLoaded && !!user;
   
-  const [initialNodes, setInitialNodes] = useState<CustomNode[]>([]);
-  const [initialEdges, setInitialEdges] = useState<CustomEdge[]>([]);
   const [isProjectLoaded, setIsProjectLoaded] = useState(false);
 
   // Load project data if projectId is provided and user is authenticated
@@ -33,13 +30,7 @@ export function EditorWithProject({
   // Handle project data loading
   useEffect(() => {
     if (project?.projectData) {
-      const projectData = project.projectData as any;
-      if (projectData.nodes) {
-        setInitialNodes(projectData.nodes);
-      }
-      if (projectData.edges) {
-        setInitialEdges(projectData.edges);
-      }
+      // Project data will be handled by the Editor component itself
     }
     setIsProjectLoaded(true);
   }, [project]);
@@ -75,9 +66,6 @@ export function EditorWithProject({
 
   return (
     <Editor
-      projectId={projectId}
-      initialNodes={initialNodes}
-      initialEdges={initialEdges}
       onSave={handleSave}
       onAuthRequired={onAuthRequired}
       autoSave={true}

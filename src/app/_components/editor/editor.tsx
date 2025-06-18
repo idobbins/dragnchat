@@ -9,7 +9,7 @@ import {
   useEdgesState,
   addEdge,
 } from "@xyflow/react";
-import type { Node, Edge, Connection } from "@xyflow/react";
+import type { Node, Edge, Connection, NodeChange, EdgeChange } from "@xyflow/react";
 import { useUser } from "@clerk/nextjs";
 import { ModelSelectionNode } from "./nodes/model-selection-node";
 import type { ModelSelectionNodeData } from "./nodes/model-selection-node";
@@ -192,7 +192,7 @@ export function Editor({
   const loadFromLocalStorage = useCallback((): EditorProjectData | null => {
     try {
       const draft = localStorage.getItem('editor-draft');
-      return draft ? JSON.parse(draft) : null;
+      return draft ? JSON.parse(draft) as EditorProjectData : null;
     } catch (error) {
       console.error('Failed to load from localStorage:', error);
       return null;
@@ -304,7 +304,7 @@ export function Editor({
         
         // Then populate with project data if it exists
         if (project.projectData) {
-          const projectData = project.projectData as any;
+          const projectData = project.projectData as EditorProjectData;
           if (projectData.nodes && Array.isArray(projectData.nodes)) {
             setNodes(projectData.nodes);
           }
@@ -354,12 +354,12 @@ export function Editor({
   }, [currentProjectId, isAuthenticated, isLoaded, loadFromLocalStorage, setNodes, setEdges]);
 
   // Track changes to nodes and edges
-  const handleNodesChange = useCallback((changes: any) => {
+  const handleNodesChange = useCallback((changes: NodeChange<CustomNode>[]) => {
     onNodesChange(changes);
     setHasUnsavedChanges(true);
   }, [onNodesChange]);
 
-  const handleEdgesChange = useCallback((changes: any) => {
+  const handleEdgesChange = useCallback((changes: EdgeChange<CustomEdge>[]) => {
     onEdgesChange(changes);
     setHasUnsavedChanges(true);
   }, [onEdgesChange]);

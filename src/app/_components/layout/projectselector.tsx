@@ -26,7 +26,7 @@ export function ProjectSelector() {
   const [open, setOpen] = useState(false);
   
   // Simple store for selected project
-  const { selectedProject, selectProject, clearSelection } = useSelectedProjectStore();
+  const { selectedProject, selectProject } = useSelectedProjectStore();
   
   // tRPC queries and mutations
   const { 
@@ -91,13 +91,12 @@ export function ProjectSelector() {
       
       // Invalidate and refetch projects to get the updated list
       await trpcUtils.projects.getAll.invalidate();
-    } catch (error) {
+    } catch {
       // Error is already logged in the mutation's onError
     }
   };
 
   const isLoading = isLoadingProjects || createProjectMutation.isPending;
-  const error = projectsError?.message;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -124,9 +123,9 @@ export function ProjectSelector() {
                   size="sm"
                   className="text-xs"
                   onClick={() => {
-                    const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
-                    if (input?.value.trim()) {
-                      handleCreateProject(input.value);
+                    const input = document.querySelector('[cmdk-input]');
+                    if (input && 'value' in input && typeof input.value === 'string' && input.value.trim()) {
+                      void handleCreateProject(input.value);
                     }
                   }}
                   disabled={createProjectMutation.isPending}
@@ -137,9 +136,9 @@ export function ProjectSelector() {
               </div>
             </CommandEmpty>
             
-            {error && (
+            {projectsError && (
               <CommandItem disabled className="text-red-600 justify-center">
-                Error: {error}
+                Error: {projectsError.message}
               </CommandItem>
             )}
 

@@ -8,7 +8,7 @@ export default async function Home() {
   const isSignedIn = !!userId;
 
   // Prefetch data on the server for better performance
-  const health = await api.health();
+  await api.health();
 
   return (
     <HydrateClient>
