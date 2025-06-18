@@ -296,19 +296,30 @@ export function Editor({
 
   // Handle project data loading
   useEffect(() => {
-    if (project?.projectData) {
-      const projectData = project.projectData as any;
-      if (projectData.nodes) {
-        setNodes(projectData.nodes);
+    if (currentProjectId && isAuthenticated && !isLoadingProject) {
+      if (project) {
+        // Project loaded successfully - always clear editor first, then populate with data
+        setNodes([]); // Clear existing nodes
+        setEdges([]); // Clear existing edges
+        
+        // Then populate with project data if it exists
+        if (project.projectData) {
+          const projectData = project.projectData as any;
+          if (projectData.nodes && Array.isArray(projectData.nodes)) {
+            setNodes(projectData.nodes);
+          }
+          if (projectData.edges && Array.isArray(projectData.edges)) {
+            setEdges(projectData.edges);
+          }
+        }
+        setIsProjectLoaded(true);
+      } else {
+        // Project not found or failed to load
+        console.error('Failed to load project');
+        setNodes([]); // Clear editor on error
+        setEdges([]);
+        setIsProjectLoaded(true);
       }
-      if (projectData.edges) {
-        setEdges(projectData.edges);
-      }
-      setIsProjectLoaded(true);
-    } else if (currentProjectId && isAuthenticated && !isLoadingProject && !project) {
-      // Project not found or failed to load
-      console.error('Failed to load project');
-      setIsProjectLoaded(true);
     } else if (!currentProjectId) {
       // No project selected, mark as loaded
       setIsProjectLoaded(true);
