@@ -11,11 +11,11 @@ export interface ExecutionNodeData extends Record<string, unknown> {
 export interface ExecutionNode {
   id: string;
   type: 'textInput' | 'modelSelection' | 'textOutput';
-  data: any;
+  data: Record<string, unknown>;
   dependencies: string[]; // Node IDs this depends on
   dependents: string[];   // Node IDs that depend on this
   status: 'pending' | 'running' | 'completed' | 'error';
-  result?: any;
+  result?: string;
   error?: string;
 }
 
@@ -33,7 +33,7 @@ export interface ExecutionContext {
 
 export interface NodeExecutionResult {
   success: boolean;
-  result?: any;
+  result?: string;
   error?: string;
   timestamp: string;
 }
@@ -41,7 +41,7 @@ export interface NodeExecutionResult {
 export interface ExecutionProgress {
   nodeId: string;
   status: 'pending' | 'running' | 'completed' | 'error';
-  result?: any;
+  result?: string;
   error?: string;
   timestamp: string;
 }

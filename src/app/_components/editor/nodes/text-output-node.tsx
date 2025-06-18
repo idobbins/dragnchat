@@ -31,7 +31,7 @@ export function TextOutputNode({ data, id }: TextOutputNodeProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
   const resizeDimensions = useRef(dimensions);
-  const executionStatus = data.executionStatus || 'idle';
+  const executionStatus = data.executionStatus ?? 'idle';
 
   // Display text from execution result or fallback to data.text
   const displayText = data.executionResult ?? data.text ?? "";

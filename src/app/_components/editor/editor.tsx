@@ -148,7 +148,7 @@ export function Editor({
                 ...node,
                 data: {
                   ...node.data,
-                  executionStatus: nodeResult.status as any,
+                  executionStatus: nodeResult.status as 'idle' | 'running' | 'completed' | 'error',
                   executionResult: nodeResult.result,
                   executionError: nodeResult.error,
                 },
@@ -159,7 +159,7 @@ export function Editor({
         );
       } else {
         setExecutionStatus('error');
-        setExecutionErrors(result.errors || ['Unknown execution error']);
+        setExecutionErrors(result.errors ?? ['Unknown execution error']);
       }
     },
     onError: (error) => {

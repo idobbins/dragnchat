@@ -60,7 +60,7 @@ export async function executeOpenRouterModel(
       let errorMessage = `OpenRouter API error: ${response.status} ${response.statusText}`;
       
       try {
-        const errorData = JSON.parse(errorText);
+        const errorData = JSON.parse(errorText) as { error?: { message?: string } };
         if (errorData.error?.message) {
           errorMessage = errorData.error.message;
         }
@@ -74,7 +74,14 @@ export async function executeOpenRouterModel(
       };
     }
 
-    const data = await response.json();
+    const data = await response.json() as {
+      choices?: Array<{ message?: { content?: string } }>;
+      usage?: {
+        prompt_tokens?: number;
+        completion_tokens?: number;
+        total_tokens?: number;
+      };
+    };
     
     // Extract the response text
     const content = data.choices?.[0]?.message?.content;
@@ -87,9 +94,9 @@ export async function executeOpenRouterModel(
 
     // Extract usage information if available
     const usage = data.usage ? {
-      promptTokens: data.usage.prompt_tokens || 0,
-      completionTokens: data.usage.completion_tokens || 0,
-      totalTokens: data.usage.total_tokens || 0,
+      promptTokens: data.usage.prompt_tokens ?? 0,
+      completionTokens: data.usage.completion_tokens ?? 0,
+      totalTokens: data.usage.total_tokens ?? 0,
     } : undefined;
 
     return {
@@ -141,8 +148,8 @@ export async function getOpenRouterModels(apiKey: string): Promise<OpenRouterMod
       throw new Error("Failed to fetch models");
     }
 
-    const data = await response.json();
-    return data.data || [];
+    const data = await response.json() as { data?: OpenRouterModel[] };
+    return data.data ?? [];
   } catch (error) {
     console.error("Error fetching OpenRouter models:", error);
     return [];

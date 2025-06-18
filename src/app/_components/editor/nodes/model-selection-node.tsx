@@ -63,7 +63,7 @@ export function ModelSelectionNode({ data, id }: ModelSelectionNodeProps) {
   }, []);
 
   const selectedModel = data.selectedModel;
-  const executionStatus = data.executionStatus || 'idle';
+  const executionStatus = data.executionStatus ?? 'idle';
 
   // Get border color based on execution status
   const getBorderColor = () => {

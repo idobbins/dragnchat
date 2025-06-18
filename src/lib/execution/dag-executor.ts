@@ -16,6 +16,7 @@ import {
   updateNodeInGraph,
 } from "./utils";
 import { executeOpenRouterModel } from "./openrouter-executor";
+import type { OpenRouterModel } from "@/server/api/routers/openrouter";
 
 export class DAGExecutor {
   private graph: ExecutionGraph;
@@ -55,7 +56,7 @@ export class DAGExecutor {
       for (const nodeId of this.graph.executionOrder) {
         const result = await this.executeNode(nodeId);
         if (!result.success) {
-          return { success: false, errors: [result.error || "Unknown execution error"] };
+          return { success: false, errors: [result.error ?? "Unknown execution error"] };
         }
       }
 
@@ -101,7 +102,7 @@ export class DAGExecutor {
     });
 
     try {
-      let result: any;
+      let result: string;
 
       switch (node.type) {
         case "textInput":
@@ -114,7 +115,7 @@ export class DAGExecutor {
           result = await this.executeTextOutputNode(nodeId);
           break;
         default:
-          throw new Error(`Unknown node type: ${node.type}`);
+          throw new Error(`Unknown node type: ${String(node.type)}`);
       }
 
       // Update node with result
@@ -158,8 +159,8 @@ export class DAGExecutor {
     const node = this.graph.nodes.get(nodeId);
     if (!node) throw new Error(`Node ${nodeId} not found`);
 
-    const text = node.data.text || "";
-    if (text.trim() === "") {
+    const text = node.data.text;
+    if (!text || typeof text !== 'string' || text.trim() === "") {
       throw new Error("Text input is empty");
     }
 
@@ -186,16 +187,16 @@ export class DAGExecutor {
 
     // Execute the model via OpenRouter
     const response = await executeOpenRouterModel({
-      model: selectedModel,
+      model: selectedModel as OpenRouterModel,
       inputText,
       apiKey: this.context.apiKey,
     });
 
     if (!response.success) {
-      throw new Error(response.error || "Model execution failed");
+      throw new Error(response.error ?? "Model execution failed");
     }
 
-    return response.result || "";
+    return response.result ?? "";
   }
 
   /**
@@ -236,8 +237,8 @@ export class DAGExecutor {
   /**
    * Get execution results for all nodes
    */
-  getExecutionResults(): Record<string, { status: string; result?: any; error?: string }> {
-    const results: Record<string, { status: string; result?: any; error?: string }> = {};
+  getExecutionResults(): Record<string, { status: string; result?: string; error?: string }> {
+    const results: Record<string, { status: string; result?: string; error?: string }> = {};
     
     for (const [nodeId, node] of this.graph.nodes) {
       results[nodeId] = {

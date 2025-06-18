@@ -32,7 +32,7 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
   const resizeDimensions = useRef(dimensions);
-  const executionStatus = data.executionStatus || 'idle';
+  const executionStatus = data.executionStatus ?? 'idle';
 
   // Get border color based on execution status
   const getBorderColor = () => {

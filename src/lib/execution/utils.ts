@@ -123,7 +123,8 @@ export function validateExecutionGraph(graph: ExecutionGraph): { valid: boolean;
     }
     
     if (node.type === 'textInput') {
-      if (!node.data.text || node.data.text.trim() === '') {
+      const text = node.data.text;
+      if (!text || (typeof text === 'string' && text.trim() === '')) {
         errors.push(`Text input node ${nodeId} is empty`);
       }
     }
@@ -147,7 +148,7 @@ export function getNodeInputData(nodeId: string, graph: ExecutionGraph): string 
   
   for (const depId of node.dependencies) {
     const depNode = graph.nodes.get(depId);
-    if (depNode && depNode.result) {
+    if (depNode?.result) {
       inputs.push(depNode.result);
     }
   }
@@ -181,7 +182,7 @@ export function updateNodeInGraph(
   nodeId: string,
   graph: ExecutionGraph,
   status: ExecutionNode['status'],
-  result?: any,
+  result?: string,
   error?: string
 ): void {
   const node = graph.nodes.get(nodeId);
