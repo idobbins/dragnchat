@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle, AlertCircle, Loader2, MoveDiagonal2 } from "lucide-react";
+import { NodeWrapper } from "../node-wrapper";
 
 export interface TextOutputNodeData extends Record<string, unknown> {
   text?: string;
@@ -11,6 +12,7 @@ export interface TextOutputNodeData extends Record<string, unknown> {
   width?: number;
   height?: number;
   onDataChange?: (id: string, newData: TextOutputNodeData) => void;
+  onDeleteNode?: (nodeId: string) => void;
   executionStatus?: "idle" | "running" | "completed" | "error";
   executionResult?: string;
   executionError?: string;
@@ -127,59 +129,65 @@ export function TextOutputNode({ data, id }: TextOutputNodeProps) {
   };
 
   return (
-    <div
-      ref={nodeRef}
-      className={`group relative rounded-lg border-2 bg-white shadow-sm transition-colors hover:border-gray-300 ${getBorderColor()} ${isResizingState ? "ring-opacity-50 ring-2 ring-blue-300" : ""}`}
-      style={{
-        width: dimensions.width,
-        height: dimensions.height,
-        minWidth: 250,
-        minHeight: 150,
-        userSelect: isResizingState ? "none" : "auto",
-      }}
+    <NodeWrapper
+      nodeId={id}
+      onDeleteNode={data.onDeleteNode ?? (() => { /* no-op */ })}
+      isExecuting={executionStatus === "running"}
     >
-      {/* Input Handle - Left */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="!h-3 !w-3 !border-2 !border-white !bg-blue-500"
-      />
-
-      {/* Node Content */}
-      <div className="flex h-full flex-col p-3">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="text-xs font-medium text-gray-500">Text Output</div>
-          {getStatusIcon()}
-        </div>
-
-        <div className="relative flex-1 overflow-hidden">
-          <Textarea
-            value={displayText}
-            readOnly
-            placeholder="Text output will appear here..."
-            className="h-full w-full cursor-default resize-none overflow-y-auto border-gray-200 bg-gray-50"
-            style={{
-              minHeight: "100%",
-              maxHeight: "100%",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Output Handle - Right */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="!h-3 !w-3 !border-2 !border-white !bg-green-500"
-      />
-
-      {/* Resize Handle */}
       <div
-        className="nodrag absolute -right-1 -bottom-1 flex h-5 w-5 cursor-se-resize items-center justify-center opacity-60 transition-opacity hover:opacity-100"
-        onMouseDown={handleResizeMouseDown}
+        ref={nodeRef}
+        className={`group relative rounded-lg border-2 bg-white shadow-sm transition-colors hover:border-gray-300 ${getBorderColor()} ${isResizingState ? "ring-opacity-50 ring-2 ring-blue-300" : ""}`}
+        style={{
+          width: dimensions.width,
+          height: dimensions.height,
+          minWidth: 250,
+          minHeight: 150,
+          userSelect: isResizingState ? "none" : "auto",
+        }}
       >
-        <MoveDiagonal2 className="h-3 w-3 text-gray-500" />
+        {/* Input Handle - Left */}
+        <Handle
+          type="target"
+          position={Position.Left}
+          className="!h-3 !w-3 !border-2 !border-white !bg-blue-500"
+        />
+
+        {/* Node Content */}
+        <div className="flex h-full flex-col p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="text-xs font-medium text-gray-500">Text Output</div>
+            {getStatusIcon()}
+          </div>
+
+          <div className="relative flex-1 overflow-hidden">
+            <Textarea
+              value={displayText}
+              readOnly
+              placeholder="Text output will appear here..."
+              className="h-full w-full cursor-default resize-none overflow-y-auto border-gray-200 bg-gray-50"
+              style={{
+                minHeight: "100%",
+                maxHeight: "100%",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Output Handle - Right */}
+        <Handle
+          type="source"
+          position={Position.Right}
+          className="!h-3 !w-3 !border-2 !border-white !bg-green-500"
+        />
+
+        {/* Resize Handle */}
+        <div
+          className="nodrag absolute -right-1 -bottom-1 flex h-5 w-5 cursor-se-resize items-center justify-center opacity-60 transition-opacity hover:opacity-100"
+          onMouseDown={handleResizeMouseDown}
+        >
+          <MoveDiagonal2 className="h-3 w-3 text-gray-500" />
+        </div>
       </div>
-    </div>
+    </NodeWrapper>
   );
 }

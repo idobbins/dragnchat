@@ -12,11 +12,13 @@ import { ChevronDown, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useOpenRouterModels } from "@/stores/openrouter-store";
 import type { OpenRouterModel } from "@/server/api/routers/openrouter";
 import { VirtualizedModelCommand } from "./virtualized-model-command";
+import { NodeWrapper } from "../node-wrapper";
 
 export interface ModelSelectionNodeData extends Record<string, unknown> {
   selectedModel?: OpenRouterModel;
   label?: string;
   onDataChange?: (id: string, newData: ModelSelectionNodeData) => void;
+  onDeleteNode?: (nodeId: string) => void;
   executionStatus?: "idle" | "running" | "completed" | "error";
   executionResult?: string;
   executionError?: string;
@@ -101,78 +103,84 @@ export function ModelSelectionNode({ data, id }: ModelSelectionNodeProps) {
   };
 
   return (
-    <div
-      className={`bg-card hover:border-ring min-w-[200px] rounded-lg border-2 shadow-sm transition-colors ${getBorderColor()}`}
+    <NodeWrapper
+      nodeId={id}
+      onDeleteNode={data.onDeleteNode ?? (() => { /* no-op */ })}
+      isExecuting={executionStatus === "running"}
     >
-      {/* Input Handle - Left */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="!border-background !h-3 !w-3 !border-2 !bg-blue-500"
-      />
+      <div
+        className={`bg-card hover:border-ring min-w-[200px] rounded-lg border-2 shadow-sm transition-colors ${getBorderColor()}`}
+      >
+        {/* Input Handle - Left */}
+        <Handle
+          type="target"
+          position={Position.Left}
+          className="!border-background !h-3 !w-3 !border-2 !bg-blue-500"
+        />
 
-      {/* Node Content */}
-      <div className="p-3">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="text-muted-foreground text-xs font-medium">
-            Model Selection
+        {/* Node Content */}
+        <div className="p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="text-muted-foreground text-xs font-medium">
+              Model Selection
+            </div>
+            {getStatusIcon()}
           </div>
-          {getStatusIcon()}
+
+          <Popover open={open} onOpenChange={handleOpenChange}>
+            <PopoverTrigger asChild>
+              <Button
+                ref={buttonRef}
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full justify-between text-left font-normal"
+              >
+                {selectedModel ? (
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">{selectedModel.name}</span>
+                    <span className="text-muted-foreground text-xs">
+                      {formatPricing(selectedModel)}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground">Select model...</span>
+                )}
+                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+
+            <PopoverContent className="w-[400px] p-0" align="start">
+              {models && models.length > 0 ? (
+                <VirtualizedModelCommand
+                  models={models}
+                  selectedModelId={selectedModel?.id}
+                  onModelSelect={handleModelSelect}
+                  searchPlaceholder="Search models..."
+                  height={400}
+                />
+              ) : (
+                <div className="text-muted-foreground flex items-center justify-center p-8">
+                  No models available
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+
+          {selectedModel && (
+            <div className="text-muted-foreground mt-2 text-xs">
+              Context: {selectedModel.context_length.toLocaleString()} tokens
+            </div>
+          )}
         </div>
 
-        <Popover open={open} onOpenChange={handleOpenChange}>
-          <PopoverTrigger asChild>
-            <Button
-              ref={buttonRef}
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-full justify-between text-left font-normal"
-            >
-              {selectedModel ? (
-                <div className="flex flex-col items-start">
-                  <span className="font-medium">{selectedModel.name}</span>
-                  <span className="text-muted-foreground text-xs">
-                    {formatPricing(selectedModel)}
-                  </span>
-                </div>
-              ) : (
-                <span className="text-muted-foreground">Select model...</span>
-              )}
-              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-
-          <PopoverContent className="w-[400px] p-0" align="start">
-            {models && models.length > 0 ? (
-              <VirtualizedModelCommand
-                models={models}
-                selectedModelId={selectedModel?.id}
-                onModelSelect={handleModelSelect}
-                searchPlaceholder="Search models..."
-                height={400}
-              />
-            ) : (
-              <div className="text-muted-foreground flex items-center justify-center p-8">
-                No models available
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
-
-        {selectedModel && (
-          <div className="text-muted-foreground mt-2 text-xs">
-            Context: {selectedModel.context_length.toLocaleString()} tokens
-          </div>
-        )}
+        {/* Output Handle - Right */}
+        <Handle
+          type="source"
+          position={Position.Right}
+          className="!h-3 !w-3 !border-2 !border-white !bg-green-500"
+        />
       </div>
-
-      {/* Output Handle - Right */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="!h-3 !w-3 !border-2 !border-white !bg-green-500"
-      />
-    </div>
+    </NodeWrapper>
   );
 }

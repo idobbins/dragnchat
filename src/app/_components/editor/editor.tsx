@@ -522,6 +522,24 @@ export function Editor({
     [setNodes],
   );
 
+  // Handle node deletion
+  const handleDeleteNode = useCallback(
+    (nodeId: string) => {
+      // Prevent deletion of nodes that are currently executing
+      const nodeToDelete = nodes.find((node) => node.id === nodeId);
+      if (nodeToDelete?.data?.executionStatus === "running") {
+        return; // Don't delete nodes that are currently executing
+      }
+
+      // Remove the node from the nodes array
+      setNodes((nds) => nds.filter((node) => node.id !== nodeId));
+      
+      // React Flow automatically handles edge cleanup when nodes are removed
+      setHasUnsavedChanges(true);
+    },
+    [nodes, setNodes],
+  );
+
   // Keep refs updated with current nodes and edges
   useEffect(() => {
     nodesRef.current = nodes;
@@ -649,11 +667,34 @@ export function Editor({
         event.preventDefault();
         handleManualSave();
       }
+      // Handle Delete and Backspace keys for node deletion
+      if (event.key === "Delete" || event.key === "Backspace") {
+        // Don't delete nodes if user is typing in an input/textarea/contenteditable element
+        const activeElement = document.activeElement;
+        const isTyping = activeElement && (
+          activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA" ||
+          (activeElement as HTMLElement).isContentEditable ||
+          activeElement.getAttribute("contenteditable") === "true"
+        );
+
+        if (!isTyping) {
+          // Get selected nodes from React Flow
+          const selectedNodes = nodes.filter((node) => node.selected);
+          if (selectedNodes.length > 0) {
+            event.preventDefault();
+            // Delete all selected nodes
+            selectedNodes.forEach((node) => {
+              handleDeleteNode(node.id);
+            });
+          }
+        }
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [handleManualSave]);
+  }, [handleManualSave, handleDeleteNode, nodes]);
 
   // Function to create a new node with smart positioning
   const createNode = useCallback(
@@ -705,12 +746,13 @@ export function Editor({
     [setNodes],
   );
 
-  // Add onDataChange to all nodes
+  // Add onDataChange and onDeleteNode to all nodes
   const nodesWithCallbacks = nodes.map((node) => ({
     ...node,
     data: {
       ...node.data,
       onDataChange: handleNodeDataChange,
+      onDeleteNode: handleDeleteNode,
     },
   }));
 
@@ -883,6 +925,8 @@ export function Editor({
         <br />
         Press <kbd className="rounded bg-white/20 px-1">⌘S</kbd> or{" "}
         <kbd className="rounded bg-white/20 px-1">Ctrl+S</kbd> to save
+        <br />
+        Press <kbd className="rounded bg-white/20 px-1">Del</kbd> to delete selected nodes or right-click for context menu
       </div>
     </div>
   );

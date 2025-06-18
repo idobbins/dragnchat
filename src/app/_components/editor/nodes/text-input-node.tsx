@@ -4,6 +4,7 @@ import React, { useState, useCallback, useRef } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle, AlertCircle, Loader2, MoveDiagonal2 } from "lucide-react";
+import { NodeWrapper } from "../node-wrapper";
 
 export interface TextInputNodeData extends Record<string, unknown> {
   text?: string;
@@ -11,6 +12,7 @@ export interface TextInputNodeData extends Record<string, unknown> {
   width?: number;
   height?: number;
   onDataChange?: (id: string, newData: TextInputNodeData) => void;
+  onDeleteNode?: (nodeId: string) => void;
   executionStatus?: "idle" | "running" | "completed" | "error";
   executionResult?: string;
   executionError?: string;
@@ -147,49 +149,55 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
   };
 
   return (
-    <div
-      ref={nodeRef}
-      className={`group relative rounded-lg border-2 bg-white shadow-sm transition-colors hover:border-gray-300 ${getBorderColor()} ${isResizingState ? "ring-opacity-50 ring-2 ring-blue-300" : ""}`}
-      style={{
-        width: dimensions.width,
-        height: dimensions.height,
-        minWidth: 250,
-        minHeight: 150,
-        userSelect: isResizingState ? "none" : "auto",
-      }}
+    <NodeWrapper
+      nodeId={id}
+      onDeleteNode={data.onDeleteNode ?? (() => { /* no-op */ })}
+      isExecuting={executionStatus === "running"}
     >
-      {/* Node Content */}
-      <div className="flex h-full flex-col p-3">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="text-xs font-medium text-gray-500">Text Input</div>
-          {getStatusIcon()}
-        </div>
-
-        <div className="relative flex-1">
-          <Textarea
-            value={text}
-            onChange={handleTextChange}
-            placeholder="Enter your text here..."
-            className="h-full w-full resize-none border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            style={{ minHeight: "calc(100% - 0px)" }}
-          />
-        </div>
-      </div>
-
-      {/* Output Handle - Right */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="!h-3 !w-3 !border-2 !border-white !bg-green-500"
-      />
-
-      {/* Resize Handle */}
       <div
-        className="nodrag absolute -right-1 -bottom-1 flex h-5 w-5 cursor-se-resize items-center justify-center opacity-60 transition-opacity hover:opacity-100"
-        onMouseDown={handleResizeMouseDown}
+        ref={nodeRef}
+        className={`group relative rounded-lg border-2 bg-white shadow-sm transition-colors hover:border-gray-300 ${getBorderColor()} ${isResizingState ? "ring-opacity-50 ring-2 ring-blue-300" : ""}`}
+        style={{
+          width: dimensions.width,
+          height: dimensions.height,
+          minWidth: 250,
+          minHeight: 150,
+          userSelect: isResizingState ? "none" : "auto",
+        }}
       >
-        <MoveDiagonal2 className="h-3 w-3 text-gray-500" />
+        {/* Node Content */}
+        <div className="flex h-full flex-col p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="text-xs font-medium text-gray-500">Text Input</div>
+            {getStatusIcon()}
+          </div>
+
+          <div className="relative flex-1">
+            <Textarea
+              value={text}
+              onChange={handleTextChange}
+              placeholder="Enter your text here..."
+              className="h-full w-full resize-none border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              style={{ minHeight: "calc(100% - 0px)" }}
+            />
+          </div>
+        </div>
+
+        {/* Output Handle - Right */}
+        <Handle
+          type="source"
+          position={Position.Right}
+          className="!h-3 !w-3 !border-2 !border-white !bg-green-500"
+        />
+
+        {/* Resize Handle */}
+        <div
+          className="nodrag absolute -right-1 -bottom-1 flex h-5 w-5 cursor-se-resize items-center justify-center opacity-60 transition-opacity hover:opacity-100"
+          onMouseDown={handleResizeMouseDown}
+        >
+          <MoveDiagonal2 className="h-3 w-3 text-gray-500" />
+        </div>
       </div>
-    </div>
+    </NodeWrapper>
   );
 }
