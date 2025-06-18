@@ -1,5 +1,6 @@
 import { AuthenticateWithRedirectCallback } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 
 export default function SSOCallback() {
   return (
@@ -66,10 +67,10 @@ export default function SSOCallback() {
           <div className="text-sm text-muted-foreground">
             <p>This should only take a few seconds.</p>
             <p className="mt-2">
-              If this page doesn't redirect automatically, please{" "}
-              <a href="/" className="text-primary hover:underline">
+              If this page doesn&apos;t redirect automatically, please{" "}
+              <Link href="/" className="text-primary hover:underline">
                 click here
-              </a>{" "}
+              </Link>{" "}
               to continue.
             </p>
           </div>
