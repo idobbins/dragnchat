@@ -29,6 +29,7 @@ import {
 import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useSelectedProjectStore } from "@/stores/selected-project-store";
 
 import "@xyflow/react/dist/style.css";
 
@@ -57,9 +58,6 @@ interface EditorProjectData {
 }
 
 interface EditorProps {
-  projectId?: string; // UUID of the project being edited
-  initialNodes?: CustomNode[];
-  initialEdges?: CustomEdge[];
   onSave?: (success: boolean) => void;
   onAuthRequired?: () => void; // Callback to trigger sign-in
   autoSave?: boolean; // Default true
@@ -69,18 +67,16 @@ const defaultNodes: CustomNode[] = [];
 const defaultEdges: CustomEdge[] = [];
 
 export function Editor({
-  projectId,
-  initialNodes = defaultNodes,
-  initialEdges = defaultEdges,
   onSave,
   onAuthRequired,
   autoSave = true,
 }: EditorProps): React.ReactElement {
-  const [nodes, setNodes, onNodesChange] = useNodesState<CustomNode>(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<CustomEdge>(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState<CustomNode>(defaultNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<CustomEdge>(defaultEdges);
   const [commandOpen, setCommandOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error' | 'local'>('saved');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isProjectLoaded, setIsProjectLoaded] = useState(false);
   const reactFlowRef = useRef<HTMLDivElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -88,19 +84,83 @@ export function Editor({
   const { user, isLoaded } = useUser();
   const isAuthenticated = isLoaded && !!user;
 
-  // tRPC mutations (only enabled when authenticated)
+  // Selected project from store
+  const { selectedProject, selectProject, clearSelection } = useSelectedProjectStore();
+  
+  // Use selected project UUID
+  const currentProjectId = selectedProject?.uuid;
+
+  // tRPC utils for cache management
+  const trpcUtils = api.useUtils();
+
+  // Load project data if currentProjectId is provided and user is authenticated
+  const { data: project, isLoading: isLoadingProject, error: projectError } = api.projects.getById.useQuery(
+    { uuid: currentProjectId! },
+    { 
+      enabled: !!currentProjectId && isAuthenticated,
+      retry: (failureCount, error) => {
+        // If project not found, clear it from store
+        if (error.data?.code === 'NOT_FOUND') {
+          clearSelection();
+          return false;
+        }
+        return failureCount < 3;
+      }
+    }
+  );
+
+  // tRPC mutations with optimistic updates and store integration
   const updateProject = api.projects.update.useMutation({
-    onMutate: () => {
+    onMutate: async (newData) => {
       setSaveStatus('saving');
+      
+      // Cancel outgoing refetches
+      if (currentProjectId) {
+        await trpcUtils.projects.getById.cancel({ uuid: currentProjectId });
+        
+        // Snapshot previous value
+        const previousProject = trpcUtils.projects.getById.getData({ uuid: currentProjectId });
+        
+        // Optimistically update cache
+        trpcUtils.projects.getById.setData(
+          { uuid: currentProjectId },
+          (old) => old ? { ...old, projectData: newData.projectData, updatedAt: new Date() } : old
+        );
+        
+        return { previousProject };
+      }
     },
-    onSuccess: () => {
+    onSuccess: (updatedProject) => {
       setSaveStatus('saved');
       setHasUnsavedChanges(false);
+      
+      // Update the store with the latest project data
+      if (updatedProject) {
+        selectProject(updatedProject);
+      }
+      
+      // Update cache with server response
+      if (currentProjectId) {
+        trpcUtils.projects.getById.setData(
+          { uuid: currentProjectId },
+          updatedProject
+        );
+      }
+      
       onSave?.(true);
     },
-    onError: (error) => {
+    onError: (error, newData, context) => {
       console.error('Failed to save project:', error);
       setSaveStatus('error');
+      
+      // Rollback optimistic update
+      if (context?.previousProject && currentProjectId) {
+        trpcUtils.projects.getById.setData(
+          { uuid: currentProjectId },
+          context.previousProject
+        );
+      }
+      
       onSave?.(false);
     },
   });
@@ -136,7 +196,7 @@ export function Editor({
     }
 
     saveTimeoutRef.current = setTimeout(() => {
-      if (isAuthenticated && projectId) {
+      if (isAuthenticated && currentProjectId) {
         // Save to database via tRPC
         const editorData: EditorProjectData = {
           nodes,
@@ -148,7 +208,7 @@ export function Editor({
         };
         
         updateProject.mutate({
-          uuid: projectId,
+          uuid: currentProjectId,
           projectData: editorData,
         });
       } else {
@@ -156,7 +216,7 @@ export function Editor({
         saveToLocalStorage(nodes, edges);
       }
     }, 1000); // 1 second debounce
-  }, [isAuthenticated, projectId, updateProject, saveToLocalStorage]);
+  }, [isAuthenticated, currentProjectId, updateProject, saveToLocalStorage]);
 
   // Manual save function
   const handleManualSave = useCallback(() => {
@@ -196,9 +256,43 @@ export function Editor({
     }
   }, [autoSave, hasUnsavedChanges, nodes, edges, debouncedSave]);
 
-  // Load initial data effect
+  // Handle project data loading
   useEffect(() => {
-    if (!projectId && !isAuthenticated && isLoaded) {
+    if (project?.projectData) {
+      const projectData = project.projectData as any;
+      if (projectData.nodes) {
+        setNodes(projectData.nodes);
+      }
+      if (projectData.edges) {
+        setEdges(projectData.edges);
+      }
+      setIsProjectLoaded(true);
+    } else if (currentProjectId && isAuthenticated && !isLoadingProject && !project) {
+      // Project not found or failed to load
+      console.error('Failed to load project');
+      setIsProjectLoaded(true);
+    } else if (!currentProjectId) {
+      // No project selected, mark as loaded
+      setIsProjectLoaded(true);
+    }
+  }, [project, currentProjectId, isAuthenticated, isLoadingProject, setNodes, setEdges]);
+
+  // Handle project errors (e.g., project deleted, access denied)
+  useEffect(() => {
+    if (projectError && currentProjectId) {
+      console.error('Project error:', projectError);
+      
+      // If project not found, clear selection and show error
+      if (projectError.data?.code === 'NOT_FOUND') {
+        clearSelection();
+        setSaveStatus('error');
+      }
+    }
+  }, [projectError, currentProjectId, clearSelection]);
+
+  // Load initial data effect for unauthenticated users
+  useEffect(() => {
+    if (!currentProjectId && !isAuthenticated && isLoaded) {
       // Load from localStorage for unauthenticated users
       const localData = loadFromLocalStorage();
       if (localData) {
@@ -206,8 +300,9 @@ export function Editor({
         setEdges(localData.edges);
         setSaveStatus('local');
       }
+      setIsProjectLoaded(true);
     }
-  }, [projectId, isAuthenticated, isLoaded, loadFromLocalStorage, setNodes, setEdges]);
+  }, [currentProjectId, isAuthenticated, isLoaded, loadFromLocalStorage, setNodes, setEdges]);
 
   // Track changes to nodes and edges
   const handleNodesChange = useCallback((changes: any) => {
@@ -304,6 +399,18 @@ export function Editor({
       onDataChange: handleNodeDataChange,
     },
   }));
+
+  // Show loading state while project is being loaded
+  if (currentProjectId && isAuthenticated && !isProjectLoaded && isLoadingProject) {
+    return (
+      <div className="absolute top-0 left-0 h-screen w-screen flex items-center justify-center bg-gray-50">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-gray-600">Loading project...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="absolute top-0 left-0 h-screen w-screen">
