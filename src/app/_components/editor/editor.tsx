@@ -77,8 +77,12 @@ export function Editor({
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error' | 'local'>('saved');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isProjectLoaded, setIsProjectLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const reactFlowRef = useRef<HTMLDivElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const nodesRef = useRef<CustomNode[]>(nodes);
+  const edgesRef = useRef<CustomEdge[]>(edges);
+  const saveQueueRef = useRef<boolean>(false);
 
   // Authentication state
   const { user, isLoaded } = useUser();
@@ -133,6 +137,7 @@ export function Editor({
     onSuccess: (updatedProject) => {
       setSaveStatus('saved');
       setHasUnsavedChanges(false);
+      setIsSaving(false);
       
       // Update the store with the latest project data
       if (updatedProject) {
@@ -152,6 +157,7 @@ export function Editor({
     onError: (error, newData, context) => {
       console.error('Failed to save project:', error);
       setSaveStatus('error');
+      setIsSaving(false);
       
       // Rollback optimistic update
       if (context?.previousProject && currentProjectId) {
@@ -162,6 +168,10 @@ export function Editor({
       }
       
       onSave?.(false);
+    },
+    onSettled: () => {
+      // Always reset saving state when mutation completes
+      setIsSaving(false);
     },
   });
 
@@ -189,34 +199,53 @@ export function Editor({
     }
   }, []);
 
+  // Stable save function that doesn't recreate unnecessarily
+  const performSave = useCallback(() => {
+    // Prevent multiple simultaneous saves
+    if (isSaving || saveQueueRef.current) {
+      return;
+    }
+
+    saveQueueRef.current = true;
+    setIsSaving(true);
+
+    const currentNodes = nodesRef.current;
+    const currentEdges = edgesRef.current;
+
+    if (isAuthenticated && currentProjectId) {
+      // Save to database via tRPC
+      const editorData: EditorProjectData = {
+        nodes: currentNodes,
+        edges: currentEdges,
+        metadata: {
+          lastSaved: new Date().toISOString(),
+          version: '1.0.0',
+        },
+      };
+      
+      updateProject.mutate({
+        uuid: currentProjectId,
+        projectData: editorData,
+      });
+    } else {
+      // Save to localStorage for unauthenticated users
+      saveToLocalStorage(currentNodes, currentEdges);
+      setIsSaving(false);
+    }
+
+    saveQueueRef.current = false;
+  }, [isAuthenticated, currentProjectId, updateProject, saveToLocalStorage, isSaving]);
+
   // Debounced save function
-  const debouncedSave = useCallback((nodes: CustomNode[], edges: CustomEdge[]) => {
+  const debouncedSave = useCallback(() => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
     saveTimeoutRef.current = setTimeout(() => {
-      if (isAuthenticated && currentProjectId) {
-        // Save to database via tRPC
-        const editorData: EditorProjectData = {
-          nodes,
-          edges,
-          metadata: {
-            lastSaved: new Date().toISOString(),
-            version: '1.0.0',
-          },
-        };
-        
-        updateProject.mutate({
-          uuid: currentProjectId,
-          projectData: editorData,
-        });
-      } else {
-        // Save to localStorage for unauthenticated users
-        saveToLocalStorage(nodes, edges);
-      }
+      performSave();
     }, 1000); // 1 second debounce
-  }, [isAuthenticated, currentProjectId, updateProject, saveToLocalStorage]);
+  }, [performSave]);
 
   // Manual save function
   const handleManualSave = useCallback(() => {
@@ -225,8 +254,8 @@ export function Editor({
       return;
     }
     
-    debouncedSave(nodes, edges);
-  }, [isAuthenticated, onAuthRequired, debouncedSave, nodes, edges]);
+    debouncedSave();
+  }, [isAuthenticated, onAuthRequired, debouncedSave]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -249,12 +278,21 @@ export function Editor({
     [setNodes]
   );
 
+  // Keep refs updated with current nodes and edges
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+
+  useEffect(() => {
+    edgesRef.current = edges;
+  }, [edges]);
+
   // Auto-save effect
   useEffect(() => {
     if (autoSave && hasUnsavedChanges) {
-      debouncedSave(nodes, edges);
+      debouncedSave();
     }
-  }, [autoSave, hasUnsavedChanges, nodes, edges, debouncedSave]);
+  }, [autoSave, hasUnsavedChanges, debouncedSave]);
 
   // Handle project data loading
   useEffect(() => {
