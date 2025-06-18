@@ -30,7 +30,7 @@ import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSelectedProjectStore } from "@/stores/selected-project-store";
-import { Play, Square, AlertTriangle } from "lucide-react";
+import { Play, Square, AlertTriangle, X } from "lucide-react";
 
 import "@xyflow/react/dist/style.css";
 
@@ -81,6 +81,9 @@ export function Editor({
   const [isSaving, setIsSaving] = useState(false);
   const [executionStatus, setExecutionStatus] = useState<'idle' | 'running' | 'completed' | 'error'>('idle');
   const [executionErrors, setExecutionErrors] = useState<string[]>([]);
+  const [currentExecutionId, setCurrentExecutionId] = useState<string | null>(null);
+  const [executionProgress, setExecutionProgress] = useState<{ completed: number; total: number }>({ completed: 0, total: 0 });
+  const eventSourceRef = useRef<EventSource | null>(null);
   const reactFlowRef = useRef<HTMLDivElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const nodesRef = useRef<CustomNode[]>(nodes);
@@ -116,11 +119,12 @@ export function Editor({
     }
   );
 
-  // Execute workflow mutation
-  const executeWorkflow = api.execution.executeWorkflow.useMutation({
+  // Start execution mutation (SSE-based)
+  const startExecution = api.execution.startExecution.useMutation({
     onMutate: () => {
       setExecutionStatus('running');
       setExecutionErrors([]);
+      setExecutionProgress({ completed: 0, total: nodes.length });
       
       // Reset all node execution status
       setNodes((nds) =>
@@ -136,37 +140,115 @@ export function Editor({
       );
     },
     onSuccess: (result) => {
-      if (result.success) {
-        setExecutionStatus('completed');
-        
-        // Update nodes with execution results
-        setNodes((nds) =>
-          nds.map((node) => {
-            const nodeResult = result.results?.[node.id];
-            if (nodeResult) {
-              return {
-                ...node,
-                data: {
-                  ...node.data,
-                  executionStatus: nodeResult.status as 'idle' | 'running' | 'completed' | 'error',
-                  executionResult: nodeResult.result,
-                  executionError: nodeResult.error,
-                },
-              };
-            }
-            return node;
-          })
-        );
+      if (result.success && result.executionId) {
+        setCurrentExecutionId(result.executionId);
+        // Connect to SSE stream
+        connectToExecutionStream(result.executionId);
       } else {
         setExecutionStatus('error');
-        setExecutionErrors(result.errors ?? ['Unknown execution error']);
+        setExecutionErrors([result.error || 'Failed to start execution']);
       }
     },
     onError: (error) => {
       setExecutionStatus('error');
-      setExecutionErrors([error.message || 'Failed to execute workflow']);
+      setExecutionErrors([error.message || 'Failed to start execution']);
     },
   });
+
+  // Cancel execution mutation
+  const cancelExecution = api.execution.cancelExecution.useMutation({
+    onSuccess: (result) => {
+      if (result.success) {
+        disconnectFromExecutionStream();
+        setExecutionStatus('idle');
+        setCurrentExecutionId(null);
+      }
+    },
+    onError: (error) => {
+      console.error('Failed to cancel execution:', error);
+    },
+  });
+
+  // SSE connection functions
+  const connectToExecutionStream = useCallback((executionId: string) => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+
+    const eventSource = new EventSource(`/api/execution/stream/${executionId}`);
+    eventSourceRef.current = eventSource;
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        switch (data.type) {
+          case 'connected':
+            console.log('Connected to execution stream:', data.data);
+            break;
+            
+          case 'progress':
+            // Update node status in real-time
+            const { nodeId, status, result, error } = data.data;
+            
+            setNodes((nds) =>
+              nds.map((node) =>
+                node.id === nodeId
+                  ? {
+                      ...node,
+                      data: {
+                        ...node.data,
+                        executionStatus: status,
+                        executionResult: result,
+                        executionError: error,
+                      },
+                    }
+                  : node
+              )
+            );
+            
+            // Update progress
+            setExecutionProgress({
+              completed: data.data.completedNodes || 0,
+              total: data.data.totalNodes || 0,
+            });
+            break;
+            
+          case 'complete':
+            setExecutionStatus(data.data.success ? 'completed' : 'error');
+            if (!data.data.success) {
+              setExecutionErrors(data.data.errors || ['Execution failed']);
+            }
+            setCurrentExecutionId(null);
+            eventSource.close();
+            break;
+            
+          case 'cancelled':
+            setExecutionStatus('idle');
+            setCurrentExecutionId(null);
+            eventSource.close();
+            break;
+        }
+      } catch (error) {
+        console.error('Error parsing SSE message:', error);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('SSE connection error:', error);
+      setExecutionStatus('error');
+      setExecutionErrors(['Connection to execution stream failed']);
+      setCurrentExecutionId(null);
+      eventSource.close();
+    };
+  }, [setNodes]);
+
+  const disconnectFromExecutionStream = useCallback(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+  }, []);
 
   // tRPC mutations with optimistic updates and store integration
   const updateProject = api.projects.update.useMutation({
@@ -331,13 +413,20 @@ export function Editor({
       return;
     }
 
-    // Execute the workflow
-    executeWorkflow.mutate({
+    // Start execution with SSE
+    startExecution.mutate({
       projectId: currentProjectId,
       nodes,
       edges,
     });
-  }, [isAuthenticated, onAuthRequired, currentProjectId, nodes, edges, executeWorkflow]);
+  }, [isAuthenticated, onAuthRequired, currentProjectId, nodes, edges, startExecution]);
+
+  // Cancel execution function
+  const handleCancelExecution = useCallback(() => {
+    if (currentExecutionId) {
+      cancelExecution.mutate({ executionId: currentExecutionId });
+    }
+  }, [currentExecutionId, cancelExecution]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -446,14 +535,15 @@ export function Editor({
     setHasUnsavedChanges(true);
   }, [onEdgesChange]);
 
-  // Cleanup timeout on unmount
+  // Cleanup effects
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
+      disconnectFromExecutionStream();
     };
-  }, []);
+  }, [disconnectFromExecutionStream]);
 
   // Keyboard shortcut handler
   useEffect(() => {
@@ -566,24 +656,35 @@ export function Editor({
 
       {/* Execute Button and Status */}
       <div className="absolute top-20 right-4 z-50 flex items-center gap-3">
-        <Button
-          onClick={handleExecuteWorkflow}
-          disabled={executionStatus === 'running' || !isAuthenticated || nodes.length === 0}
-          variant={executionStatus === 'error' ? 'destructive' : 'default'}
-          className="flex items-center gap-2"
-        >
-          {executionStatus === 'running' ? (
-            <>
-              <Square className="h-4 w-4" />
-              Executing...
-            </>
-          ) : (
-            <>
-              <Play className="h-4 w-4" />
-              Execute Workflow
-            </>
-          )}
-        </Button>
+        {executionStatus === 'running' ? (
+          <Button
+            onClick={handleCancelExecution}
+            variant="destructive"
+            className="flex items-center gap-2"
+          >
+            <X className="h-4 w-4" />
+            Cancel
+          </Button>
+        ) : (
+          <Button
+            onClick={handleExecuteWorkflow}
+            disabled={!isAuthenticated || nodes.length === 0}
+            variant={executionStatus === 'error' ? 'destructive' : 'default'}
+            className="flex items-center gap-2"
+          >
+            <Play className="h-4 w-4" />
+            Execute Workflow
+          </Button>
+        )}
+        
+        {/* Progress indicator */}
+        {executionStatus === 'running' && executionProgress.total > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+            <div className="text-sm text-blue-800">
+              Progress: {executionProgress.completed}/{executionProgress.total}
+            </div>
+          </div>
+        )}
         
         {executionStatus === 'error' && executionErrors.length > 0 && (
           <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 max-w-md">

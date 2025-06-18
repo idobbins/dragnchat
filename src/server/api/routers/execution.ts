@@ -2,7 +2,9 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { clerkClient } from "@clerk/nextjs/server";
 import { DAGExecutor } from "@/lib/execution/dag-executor";
+import { executionSessionManager } from "@/lib/execution/session-manager";
 import type { CustomNode, CustomEdge } from "@/app/_components/editor/editor";
+import type { ExecutionProgress } from "@/lib/execution/types";
 
 // Interface for Clerk private metadata
 interface ClerkPrivateMetadata {
@@ -22,7 +24,88 @@ const validateWorkflowSchema = z.object({
 });
 
 export const executionRouter = createTRPCRouter({
-  // Execute a workflow
+  // Start a workflow execution with SSE support
+  startExecution: protectedProcedure
+    .input(executeWorkflowSchema)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        if (!ctx.user.userId) {
+          throw new Error("User ID not found");
+        }
+
+        // Get the user's API key from Clerk private metadata
+        const clerk = await clerkClient();
+        const user = await clerk.users.getUser(ctx.user.userId);
+        const privateMetadata = user.privateMetadata as ClerkPrivateMetadata;
+        const apiKey = privateMetadata?.openrouterApiKey;
+
+        if (!apiKey) {
+          throw new Error(
+            "OpenRouter API key not found. Please add your API key in your profile.",
+          );
+        }
+
+        // Create execution session
+        const executionId = executionSessionManager.createSession(
+          input.projectId,
+          ctx.user.userId,
+          input.nodes.length
+        );
+
+        // Create execution context
+        const executionContext = {
+          projectId: input.projectId,
+          userId: ctx.user.userId,
+          apiKey,
+        };
+
+        // Create progress callback for SSE updates
+        const progressCallback = (progress: ExecutionProgress) => {
+          executionSessionManager.broadcastProgress(executionId, progress);
+        };
+
+        // Start execution in background
+        setImmediate(async () => {
+          try {
+            // Create and execute the DAG
+            const executor = new DAGExecutor(
+              input.nodes as CustomNode[],
+              input.edges as CustomEdge[],
+              executionContext,
+              progressCallback
+            );
+
+            const result = await executor.execute();
+            
+            // Complete the session
+            executionSessionManager.completeSession(
+              executionId,
+              result.success,
+              result.errors
+            );
+          } catch (error) {
+            // Handle execution error
+            executionSessionManager.completeSession(
+              executionId,
+              false,
+              [error instanceof Error ? error.message : "Unknown execution error"]
+            );
+          }
+        });
+
+        return {
+          success: true,
+          executionId,
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown execution error",
+        };
+      }
+    }),
+
+  // Legacy execute workflow method (kept for backward compatibility)
   executeWorkflow: protectedProcedure
     .input(executeWorkflowSchema)
     .mutation(async ({ ctx, input }) => {
@@ -115,6 +198,47 @@ export const executionRouter = createTRPCRouter({
           valid: false,
           errors: [error instanceof Error ? error.message : "Validation error"],
           executionOrder: [],
+        };
+      }
+    }),
+
+  // Cancel an execution
+  cancelExecution: protectedProcedure
+    .input(z.object({ executionId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        if (!ctx.user.userId) {
+          throw new Error("User ID not found");
+        }
+
+        // Get the execution session
+        const session = executionSessionManager.getSession(input.executionId);
+        if (!session) {
+          return {
+            success: false,
+            error: "Execution session not found",
+          };
+        }
+
+        // Verify user owns this session
+        if (session.userId !== ctx.user.userId) {
+          return {
+            success: false,
+            error: "Forbidden",
+          };
+        }
+
+        // Cancel the execution
+        const cancelled = executionSessionManager.cancelSession(input.executionId);
+        
+        return {
+          success: cancelled,
+          error: cancelled ? undefined : "Could not cancel execution",
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
         };
       }
     }),
