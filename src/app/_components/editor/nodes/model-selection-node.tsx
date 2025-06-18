@@ -4,7 +4,7 @@ import React, { useState, useCallback, useRef } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useOpenRouterModels } from "@/stores/openrouter-store";
 import type { OpenRouterModel } from "@/server/api/routers/openrouter";
 import { VirtualizedModelCommand } from "./virtualized-model-command";
@@ -13,6 +13,9 @@ export interface ModelSelectionNodeData extends Record<string, unknown> {
   selectedModel?: OpenRouterModel;
   label?: string;
   onDataChange?: (id: string, newData: ModelSelectionNodeData) => void;
+  executionStatus?: 'idle' | 'running' | 'completed' | 'error';
+  executionResult?: string;
+  executionError?: string;
 }
 
 interface ModelSelectionNodeProps {
@@ -60,9 +63,38 @@ export function ModelSelectionNode({ data, id }: ModelSelectionNodeProps) {
   }, []);
 
   const selectedModel = data.selectedModel;
+  const executionStatus = data.executionStatus || 'idle';
+
+  // Get border color based on execution status
+  const getBorderColor = () => {
+    switch (executionStatus) {
+      case 'running':
+        return 'border-blue-500 animate-pulse';
+      case 'completed':
+        return 'border-green-500';
+      case 'error':
+        return 'border-red-500';
+      default:
+        return 'border-border';
+    }
+  };
+
+  // Get status icon
+  const getStatusIcon = () => {
+    switch (executionStatus) {
+      case 'running':
+        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
+      case 'completed':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'error':
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="bg-card border-2 border-border rounded-lg shadow-sm min-w-[200px] hover:border-ring transition-colors">
+    <div className={`bg-card border-2 rounded-lg shadow-sm min-w-[200px] hover:border-ring transition-colors ${getBorderColor()}`}>
       {/* Input Handle - Left */}
       <Handle
         type="target"
@@ -72,7 +104,10 @@ export function ModelSelectionNode({ data, id }: ModelSelectionNodeProps) {
       
       {/* Node Content */}
       <div className="p-3">
-        <div className="text-xs font-medium text-muted-foreground mb-2">Model Selection</div>
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-xs font-medium text-muted-foreground">Model Selection</div>
+          {getStatusIcon()}
+        </div>
         
         <Popover open={open} onOpenChange={handleOpenChange}>
           <PopoverTrigger asChild>

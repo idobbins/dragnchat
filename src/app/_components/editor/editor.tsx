@@ -30,6 +30,7 @@ import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSelectedProjectStore } from "@/stores/selected-project-store";
+import { Play, Square, AlertTriangle } from "lucide-react";
 
 import "@xyflow/react/dist/style.css";
 
@@ -78,6 +79,8 @@ export function Editor({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isProjectLoaded, setIsProjectLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [executionStatus, setExecutionStatus] = useState<'idle' | 'running' | 'completed' | 'error'>('idle');
+  const [executionErrors, setExecutionErrors] = useState<string[]>([]);
   const reactFlowRef = useRef<HTMLDivElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const nodesRef = useRef<CustomNode[]>(nodes);
@@ -112,6 +115,58 @@ export function Editor({
       }
     }
   );
+
+  // Execute workflow mutation
+  const executeWorkflow = api.execution.executeWorkflow.useMutation({
+    onMutate: () => {
+      setExecutionStatus('running');
+      setExecutionErrors([]);
+      
+      // Reset all node execution status
+      setNodes((nds) =>
+        nds.map((node) => ({
+          ...node,
+          data: {
+            ...node.data,
+            executionStatus: 'idle',
+            executionResult: undefined,
+            executionError: undefined,
+          },
+        }))
+      );
+    },
+    onSuccess: (result) => {
+      if (result.success) {
+        setExecutionStatus('completed');
+        
+        // Update nodes with execution results
+        setNodes((nds) =>
+          nds.map((node) => {
+            const nodeResult = result.results?.[node.id];
+            if (nodeResult) {
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  executionStatus: nodeResult.status as any,
+                  executionResult: nodeResult.result,
+                  executionError: nodeResult.error,
+                },
+              };
+            }
+            return node;
+          })
+        );
+      } else {
+        setExecutionStatus('error');
+        setExecutionErrors(result.errors || ['Unknown execution error']);
+      }
+    },
+    onError: (error) => {
+      setExecutionStatus('error');
+      setExecutionErrors([error.message || 'Failed to execute workflow']);
+    },
+  });
 
   // tRPC mutations with optimistic updates and store integration
   const updateProject = api.projects.update.useMutation({
@@ -256,6 +311,33 @@ export function Editor({
     
     debouncedSave();
   }, [isAuthenticated, onAuthRequired, debouncedSave]);
+
+  // Execute workflow function
+  const handleExecuteWorkflow = useCallback(() => {
+    if (!isAuthenticated) {
+      if (onAuthRequired) {
+        onAuthRequired();
+      }
+      return;
+    }
+
+    if (!currentProjectId) {
+      setExecutionErrors(['No project selected']);
+      return;
+    }
+
+    if (nodes.length === 0) {
+      setExecutionErrors(['No nodes to execute']);
+      return;
+    }
+
+    // Execute the workflow
+    executeWorkflow.mutate({
+      projectId: currentProjectId,
+      nodes,
+      edges,
+    });
+  }, [isAuthenticated, onAuthRequired, currentProjectId, nodes, edges, executeWorkflow]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -481,6 +563,42 @@ export function Editor({
           </div>
         </div>
       )}
+
+      {/* Execute Button and Status */}
+      <div className="absolute top-20 right-4 z-50 flex items-center gap-3">
+        <Button
+          onClick={handleExecuteWorkflow}
+          disabled={executionStatus === 'running' || !isAuthenticated || nodes.length === 0}
+          variant={executionStatus === 'error' ? 'destructive' : 'default'}
+          className="flex items-center gap-2"
+        >
+          {executionStatus === 'running' ? (
+            <>
+              <Square className="h-4 w-4" />
+              Executing...
+            </>
+          ) : (
+            <>
+              <Play className="h-4 w-4" />
+              Execute Workflow
+            </>
+          )}
+        </Button>
+        
+        {executionStatus === 'error' && executionErrors.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 max-w-md">
+            <div className="flex items-center gap-2 text-red-800 text-sm font-medium mb-1">
+              <AlertTriangle className="h-4 w-4" />
+              Execution Failed
+            </div>
+            <div className="text-red-700 text-xs">
+              {executionErrors.map((error, index) => (
+                <div key={index}>{error}</div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Save Status Indicator */}
       <div className="absolute bottom-4 left-4 z-50">

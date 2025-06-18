@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useRef } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { Textarea } from "@/components/ui/textarea";
+import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 export interface TextInputNodeData extends Record<string, unknown> {
   text?: string;
@@ -10,6 +11,9 @@ export interface TextInputNodeData extends Record<string, unknown> {
   width?: number;
   height?: number;
   onDataChange?: (id: string, newData: TextInputNodeData) => void;
+  executionStatus?: 'idle' | 'running' | 'completed' | 'error';
+  executionResult?: string;
+  executionError?: string;
 }
 
 interface TextInputNodeProps {
@@ -28,6 +32,35 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
   const resizeDimensions = useRef(dimensions);
+  const executionStatus = data.executionStatus || 'idle';
+
+  // Get border color based on execution status
+  const getBorderColor = () => {
+    switch (executionStatus) {
+      case 'running':
+        return 'border-blue-500 animate-pulse';
+      case 'completed':
+        return 'border-green-500';
+      case 'error':
+        return 'border-red-500';
+      default:
+        return 'border-gray-200';
+    }
+  };
+
+  // Get status icon
+  const getStatusIcon = () => {
+    switch (executionStatus) {
+      case 'running':
+        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
+      case 'completed':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'error':
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return null;
+    }
+  };
 
   // Handle text changes
   const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -97,7 +130,7 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
   return (
     <div 
       ref={nodeRef}
-      className="bg-white border-2 border-gray-200 rounded-lg shadow-sm hover:border-gray-300 transition-colors relative group"
+      className={`bg-white border-2 rounded-lg shadow-sm hover:border-gray-300 transition-colors relative group ${getBorderColor()}`}
       style={{ 
         width: dimensions.width, 
         height: dimensions.height,
@@ -108,7 +141,10 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
       
       {/* Node Content */}
       <div className="p-3 h-full flex flex-col">
-        <div className="text-xs font-medium text-gray-500 mb-2">Text Input</div>
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-xs font-medium text-gray-500">Text Input</div>
+          {getStatusIcon()}
+        </div>
         
         <div className="flex-1 relative">
           <Textarea
