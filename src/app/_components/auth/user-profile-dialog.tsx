@@ -25,10 +25,12 @@ import {
   Save,
   Trash2,
   RefreshCw,
+  Palette,
 } from "lucide-react";
 import { api } from "@/trpc/react";
 import { useOpenRouterModels } from "@/stores/openrouter-store";
 import type { OpenRouterModel } from "@/server/api/routers/openrouter";
+import { useTheme } from "next-themes";
 
 type ApiKeyStatus = "NOT_SET" | "VALIDATING" | "VALID" | "INVALID";
 type ButtonAction = "SAVE" | "DELETE" | "LOADING";
@@ -67,6 +69,7 @@ export function UserProfileDialog({
   const [isValidating, setIsValidating] = useState<boolean>(false);
   const [isPendingSuccess, setIsPendingSuccess] = useState<boolean>(false);
   const { signOut } = useClerk();
+  const { theme, setTheme } = useTheme();
 
   const {
     models,
@@ -429,6 +432,42 @@ export function UserProfileDialog({
               </div>
             </>
           )}
+
+          <Separator />
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-2">
+                <Palette className="h-4 w-4" />
+                Theme
+              </Label>
+              <div className="flex gap-1">
+                <Button
+                  size="sm"
+                  variant={theme === "light" ? "default" : "outline"}
+                  onClick={() => setTheme("light")}
+                  className="h-7 px-2 text-xs"
+                >
+                  Light
+                </Button>
+                <Button
+                  size="sm"
+                  variant={theme === "dark" ? "default" : "outline"}
+                  onClick={() => setTheme("dark")}
+                  className="h-7 px-2 text-xs"
+                >
+                  Dark
+                </Button>
+                <Button
+                  size="sm"
+                  variant={theme === "system" ? "default" : "outline"}
+                  onClick={() => setTheme("system")}
+                  className="h-7 px-2 text-xs"
+                >
+                  System
+                </Button>
+              </div>
+            </div>
+          </div>
 
           <Button
             variant="outline"

@@ -47,7 +47,7 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
       case "error":
         return "border-red-500";
       default:
-        return "border-gray-200";
+        return "border-border";
     }
   };
 
@@ -156,7 +156,7 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
     >
       <div
         ref={nodeRef}
-        className={`group relative rounded-lg border-2 bg-white shadow-sm transition-colors hover:border-gray-300 ${getBorderColor()} ${isResizingState ? "ring-opacity-50 ring-2 ring-blue-300" : ""}`}
+        className={`group relative rounded-lg border-2 bg-card shadow-sm transition-colors hover:border-muted-foreground/50 ${getBorderColor()} ${isResizingState ? "ring-opacity-50 ring-2 ring-blue-300" : ""}`}
         style={{
           width: dimensions.width,
           height: dimensions.height,
@@ -168,7 +168,7 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
         {/* Node Content */}
         <div className="flex h-full flex-col p-3">
           <div className="mb-2 flex items-center justify-between">
-            <div className="text-xs font-medium text-gray-500">Text Input</div>
+            <div className="text-xs font-medium text-muted-foreground">Text Input</div>
             {getStatusIcon()}
           </div>
 
@@ -177,7 +177,7 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
               value={text}
               onChange={handleTextChange}
               placeholder="Enter your text here..."
-              className="h-full w-full resize-none border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="h-full w-full resize-none border-border focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-background text-foreground"
               style={{ minHeight: "calc(100% - 0px)" }}
             />
           </div>
@@ -195,7 +195,7 @@ export function TextInputNode({ data, id }: TextInputNodeProps) {
           className="nodrag absolute -right-1 -bottom-1 flex h-5 w-5 cursor-se-resize items-center justify-center opacity-60 transition-opacity hover:opacity-100"
           onMouseDown={handleResizeMouseDown}
         >
-          <MoveDiagonal2 className="h-3 w-3 text-gray-500" />
+          <MoveDiagonal2 className="h-3 w-3 text-muted-foreground" />
         </div>
       </div>
     </NodeWrapper>

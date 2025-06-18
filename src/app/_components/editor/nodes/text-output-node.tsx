@@ -49,7 +49,7 @@ export function TextOutputNode({ data, id }: TextOutputNodeProps) {
       case "error":
         return "border-red-500";
       default:
-        return "border-gray-200";
+        return "border-border";
     }
   };
 
@@ -136,7 +136,7 @@ export function TextOutputNode({ data, id }: TextOutputNodeProps) {
     >
       <div
         ref={nodeRef}
-        className={`group relative rounded-lg border-2 bg-white shadow-sm transition-colors hover:border-gray-300 ${getBorderColor()} ${isResizingState ? "ring-opacity-50 ring-2 ring-blue-300" : ""}`}
+        className={`group relative rounded-lg border-2 bg-card shadow-sm transition-colors hover:border-muted-foreground/50 ${getBorderColor()} ${isResizingState ? "ring-opacity-50 ring-2 ring-blue-300" : ""}`}
         style={{
           width: dimensions.width,
           height: dimensions.height,
@@ -155,7 +155,7 @@ export function TextOutputNode({ data, id }: TextOutputNodeProps) {
         {/* Node Content */}
         <div className="flex h-full flex-col p-3">
           <div className="mb-2 flex items-center justify-between">
-            <div className="text-xs font-medium text-gray-500">Text Output</div>
+            <div className="text-xs font-medium text-muted-foreground">Text Output</div>
             {getStatusIcon()}
           </div>
 
@@ -164,7 +164,7 @@ export function TextOutputNode({ data, id }: TextOutputNodeProps) {
               value={displayText}
               readOnly
               placeholder="Text output will appear here..."
-              className="h-full w-full cursor-default resize-none overflow-y-auto border-gray-200 bg-gray-50"
+              className="h-full w-full cursor-default resize-none overflow-y-auto border-border bg-muted text-foreground"
               style={{
                 minHeight: "100%",
                 maxHeight: "100%",
@@ -185,7 +185,7 @@ export function TextOutputNode({ data, id }: TextOutputNodeProps) {
           className="nodrag absolute -right-1 -bottom-1 flex h-5 w-5 cursor-se-resize items-center justify-center opacity-60 transition-opacity hover:opacity-100"
           onMouseDown={handleResizeMouseDown}
         >
-          <MoveDiagonal2 className="h-3 w-3 text-gray-500" />
+          <MoveDiagonal2 className="h-3 w-3 text-muted-foreground" />
         </div>
       </div>
     </NodeWrapper>
