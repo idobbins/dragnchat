@@ -272,7 +272,10 @@ export function UserProfileDialog({
                     );
                   case "VALID":
                     return (
-                      <Badge variant="default" className="bg-green-600 flex gap-1">
+                      <Badge
+                        variant="default"
+                        className="flex gap-1 bg-green-600"
+                      >
                         <CheckCircle2 className="h-3 w-3" />
                         Connected
                       </Badge>
@@ -405,7 +408,7 @@ export function UserProfileDialog({
                       }
                     }}
                     disabled={modelsLoading}
-                    className="h-7 flex gap-1"
+                    className="flex h-7 gap-1"
                   >
                     {modelsLoading ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -429,7 +432,7 @@ export function UserProfileDialog({
 
           <Button
             variant="outline"
-            className="text-destructive hover:text-destructive justify-start flex gap-2"
+            className="text-destructive hover:text-destructive flex justify-start gap-2"
             onClick={handleSignOut}
             disabled={isLoading}
           >

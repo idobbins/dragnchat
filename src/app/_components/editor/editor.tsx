@@ -9,7 +9,13 @@ import {
   useEdgesState,
   addEdge,
 } from "@xyflow/react";
-import type { Node, Edge, Connection, NodeChange, EdgeChange } from "@xyflow/react";
+import type {
+  Node,
+  Edge,
+  Connection,
+  NodeChange,
+  EdgeChange,
+} from "@xyflow/react";
 import { useUser } from "@clerk/nextjs";
 import { ModelSelectionNode } from "./nodes/model-selection-node";
 import type { ModelSelectionNodeData } from "./nodes/model-selection-node";
@@ -30,7 +36,7 @@ import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSelectedProjectStore } from "@/stores/selected-project-store";
-import { Play, Square, AlertTriangle, X } from "lucide-react";
+import { Play, AlertTriangle, X } from "lucide-react";
 
 import "@xyflow/react/dist/style.css";
 
@@ -38,7 +44,9 @@ interface NodeData extends Record<string, unknown> {
   label: string;
 }
 
-export type CustomNode = Node<NodeData | ModelSelectionNodeData | TextInputNodeData | TextOutputNodeData>;
+export type CustomNode = Node<
+  NodeData | ModelSelectionNodeData | TextInputNodeData | TextOutputNodeData
+>;
 export type CustomEdge = Edge;
 
 // Define node types for React Flow
@@ -72,17 +80,28 @@ export function Editor({
   onAuthRequired,
   autoSave = true,
 }: EditorProps): React.ReactElement {
-  const [nodes, setNodes, onNodesChange] = useNodesState<CustomNode>(defaultNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<CustomEdge>(defaultEdges);
+  const [nodes, setNodes, onNodesChange] =
+    useNodesState<CustomNode>(defaultNodes);
+  const [edges, setEdges, onEdgesChange] =
+    useEdgesState<CustomEdge>(defaultEdges);
   const [commandOpen, setCommandOpen] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error' | 'local'>('saved');
+  const [saveStatus, setSaveStatus] = useState<
+    "saved" | "saving" | "error" | "local"
+  >("saved");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isProjectLoaded, setIsProjectLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [executionStatus, setExecutionStatus] = useState<'idle' | 'running' | 'completed' | 'error'>('idle');
+  const [executionStatus, setExecutionStatus] = useState<
+    "idle" | "running" | "completed" | "error"
+  >("idle");
   const [executionErrors, setExecutionErrors] = useState<string[]>([]);
-  const [currentExecutionId, setCurrentExecutionId] = useState<string | null>(null);
-  const [executionProgress, setExecutionProgress] = useState<{ completed: number; total: number }>({ completed: 0, total: 0 });
+  const [currentExecutionId, setCurrentExecutionId] = useState<string | null>(
+    null,
+  );
+  const [executionProgress, setExecutionProgress] = useState<{
+    completed: number;
+    total: number;
+  }>({ completed: 0, total: 0 });
   const eventSourceRef = useRef<EventSource | null>(null);
   const reactFlowRef = useRef<HTMLDivElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -95,8 +114,9 @@ export function Editor({
   const isAuthenticated = isLoaded && !!user;
 
   // Selected project from store
-  const { selectedProject, selectProject, clearSelection } = useSelectedProjectStore();
-  
+  const { selectedProject, selectProject, clearSelection } =
+    useSelectedProjectStore();
+
   // Use selected project UUID
   const currentProjectId = selectedProject?.uuid;
 
@@ -104,39 +124,43 @@ export function Editor({
   const trpcUtils = api.useUtils();
 
   // Load project data if currentProjectId is provided and user is authenticated
-  const { data: project, isLoading: isLoadingProject, error: projectError } = api.projects.getById.useQuery(
+  const {
+    data: project,
+    isLoading: isLoadingProject,
+    error: projectError,
+  } = api.projects.getById.useQuery(
     { uuid: currentProjectId! },
-    { 
+    {
       enabled: !!currentProjectId && isAuthenticated,
       retry: (failureCount, error) => {
         // If project not found, clear it from store
-        if (error.data?.code === 'NOT_FOUND') {
+        if (error.data?.code === "NOT_FOUND") {
           clearSelection();
           return false;
         }
         return failureCount < 3;
-      }
-    }
+      },
+    },
   );
 
   // Start execution mutation (SSE-based)
   const startExecution = api.execution.startExecution.useMutation({
     onMutate: () => {
-      setExecutionStatus('running');
+      setExecutionStatus("running");
       setExecutionErrors([]);
       setExecutionProgress({ completed: 0, total: nodes.length });
-      
+
       // Reset all node execution status
       setNodes((nds) =>
         nds.map((node) => ({
           ...node,
           data: {
             ...node.data,
-            executionStatus: 'idle',
+            executionStatus: "idle",
             executionResult: undefined,
             executionError: undefined,
           },
-        }))
+        })),
       );
     },
     onSuccess: (result) => {
@@ -145,13 +169,15 @@ export function Editor({
         // Connect to SSE stream
         connectToExecutionStream(result.executionId);
       } else {
-        setExecutionStatus('error');
-        setExecutionErrors([result.error || 'Failed to start execution']);
+        setExecutionStatus("error");
+        setExecutionErrors([result.error ?? "Failed to start execution"]);
       }
     },
     onError: (error) => {
-      setExecutionStatus('error');
-      setExecutionErrors([error.message || 'Failed to start execution']);
+      setExecutionStatus("error");
+      setExecutionErrors([
+        String(error.message) ?? "Failed to start execution",
+      ]);
     },
   });
 
@@ -160,88 +186,105 @@ export function Editor({
     onSuccess: (result) => {
       if (result.success) {
         disconnectFromExecutionStream();
-        setExecutionStatus('idle');
+        setExecutionStatus("idle");
         setCurrentExecutionId(null);
       }
     },
     onError: (error) => {
-      console.error('Failed to cancel execution:', error);
+      console.error("Failed to cancel execution:", error);
     },
   });
 
   // SSE connection functions
-  const connectToExecutionStream = useCallback((executionId: string) => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-    }
-
-    const eventSource = new EventSource(`/api/execution/stream/${executionId}`);
-    eventSourceRef.current = eventSource;
-
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        
-        switch (data.type) {
-          case 'connected':
-            console.log('Connected to execution stream:', data.data);
-            break;
-            
-          case 'progress':
-            // Update node status in real-time
-            const { nodeId, status, result, error } = data.data;
-            
-            setNodes((nds) =>
-              nds.map((node) =>
-                node.id === nodeId
-                  ? {
-                      ...node,
-                      data: {
-                        ...node.data,
-                        executionStatus: status,
-                        executionResult: result,
-                        executionError: error,
-                      },
-                    }
-                  : node
-              )
-            );
-            
-            // Update progress
-            setExecutionProgress({
-              completed: data.data.completedNodes || 0,
-              total: data.data.totalNodes || 0,
-            });
-            break;
-            
-          case 'complete':
-            setExecutionStatus(data.data.success ? 'completed' : 'error');
-            if (!data.data.success) {
-              setExecutionErrors(data.data.errors || ['Execution failed']);
-            }
-            setCurrentExecutionId(null);
-            eventSource.close();
-            break;
-            
-          case 'cancelled':
-            setExecutionStatus('idle');
-            setCurrentExecutionId(null);
-            eventSource.close();
-            break;
-        }
-      } catch (error) {
-        console.error('Error parsing SSE message:', error);
+  const connectToExecutionStream = useCallback(
+    (executionId: string) => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
       }
-    };
 
-    eventSource.onerror = (error) => {
-      console.error('SSE connection error:', error);
-      setExecutionStatus('error');
-      setExecutionErrors(['Connection to execution stream failed']);
-      setCurrentExecutionId(null);
-      eventSource.close();
-    };
-  }, [setNodes]);
+      const eventSource = new EventSource(
+        `/api/execution/stream/${executionId}`,
+      );
+      eventSourceRef.current = eventSource;
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data as string) as {
+            type: string;
+            data: {
+              nodeId?: string;
+              status?: "idle" | "running" | "completed" | "error";
+              result?: unknown;
+              error?: string;
+              completedNodes?: number;
+              totalNodes?: number;
+              success?: boolean;
+              errors?: string[];
+            };
+          };
+
+          switch (data.type) {
+            case "connected":
+              console.log("Connected to execution stream:", data.data);
+              break;
+
+            case "progress":
+              // Update node status in real-time
+              const { nodeId, status, result, error } = data.data;
+
+              setNodes((nds) =>
+                nds.map((node) =>
+                  node.id === nodeId
+                    ? {
+                        ...node,
+                        data: {
+                          ...node.data,
+                          executionStatus: status,
+                          executionResult: result as string | undefined,
+                          executionError: error,
+                        } as typeof node.data,
+                      }
+                    : node,
+                ),
+              );
+
+              // Update progress
+              setExecutionProgress({
+                completed: data.data.completedNodes ?? 0,
+                total: data.data.totalNodes ?? 0,
+              });
+              break;
+
+            case "complete":
+              setExecutionStatus(data.data.success ? "completed" : "error");
+              if (!data.data.success) {
+                setExecutionErrors(data.data.errors ?? ["Execution failed"]);
+              }
+              setCurrentExecutionId(null);
+              eventSource.close();
+              break;
+
+            case "cancelled":
+              setExecutionStatus("idle");
+              setCurrentExecutionId(null);
+              eventSource.close();
+              break;
+          }
+        } catch (error) {
+          console.error("Error parsing SSE message:", error);
+        }
+      };
+
+      eventSource.onerror = (error) => {
+        console.error("SSE connection error:", error);
+        setExecutionStatus("error");
+        setExecutionErrors(["Connection to execution stream failed"]);
+        setCurrentExecutionId(null);
+        eventSource.close();
+      };
+    },
+    [setNodes],
+  );
 
   const disconnectFromExecutionStream = useCallback(() => {
     if (eventSourceRef.current) {
@@ -253,57 +296,64 @@ export function Editor({
   // tRPC mutations with optimistic updates and store integration
   const updateProject = api.projects.update.useMutation({
     onMutate: async (newData) => {
-      setSaveStatus('saving');
-      
+      setSaveStatus("saving");
+
       // Cancel outgoing refetches
       if (currentProjectId) {
         await trpcUtils.projects.getById.cancel({ uuid: currentProjectId });
-        
+
         // Snapshot previous value
-        const previousProject = trpcUtils.projects.getById.getData({ uuid: currentProjectId });
-        
+        const previousProject = trpcUtils.projects.getById.getData({
+          uuid: currentProjectId,
+        });
+
         // Optimistically update cache
-        trpcUtils.projects.getById.setData(
-          { uuid: currentProjectId },
-          (old) => old ? { ...old, projectData: newData.projectData, updatedAt: new Date() } : old
+        trpcUtils.projects.getById.setData({ uuid: currentProjectId }, (old) =>
+          old
+            ? {
+                ...old,
+                projectData: newData.projectData,
+                updatedAt: new Date(),
+              }
+            : old,
         );
-        
+
         return { previousProject };
       }
     },
     onSuccess: (updatedProject) => {
-      setSaveStatus('saved');
+      setSaveStatus("saved");
       setHasUnsavedChanges(false);
       setIsSaving(false);
-      
+
       // Update the store with the latest project data
       if (updatedProject) {
         selectProject(updatedProject);
       }
-      
+
       // Update cache with server response
       if (currentProjectId) {
         trpcUtils.projects.getById.setData(
           { uuid: currentProjectId },
-          updatedProject
+          updatedProject,
         );
       }
-      
+
       onSave?.(true);
     },
     onError: (error, newData, context) => {
-      console.error('Failed to save project:', error);
-      setSaveStatus('error');
+      console.error("Failed to save project:", error);
+      setSaveStatus("error");
       setIsSaving(false);
-      
+
       // Rollback optimistic update
       if (context?.previousProject && currentProjectId) {
         trpcUtils.projects.getById.setData(
           { uuid: currentProjectId },
-          context.previousProject
+          context.previousProject,
         );
       }
-      
+
       onSave?.(false);
     },
     onSettled: () => {
@@ -313,25 +363,28 @@ export function Editor({
   });
 
   // Local storage helpers for unauthenticated users
-  const saveToLocalStorage = useCallback((nodes: CustomNode[], edges: CustomEdge[]) => {
-    const editorData: EditorProjectData = {
-      nodes,
-      edges,
-      metadata: {
-        lastSaved: new Date().toISOString(),
-        version: '1.0.0',
-      },
-    };
-    localStorage.setItem('editor-draft', JSON.stringify(editorData));
-    setSaveStatus('local');
-  }, []);
+  const saveToLocalStorage = useCallback(
+    (nodes: CustomNode[], edges: CustomEdge[]) => {
+      const editorData: EditorProjectData = {
+        nodes,
+        edges,
+        metadata: {
+          lastSaved: new Date().toISOString(),
+          version: "1.0.0",
+        },
+      };
+      localStorage.setItem("editor-draft", JSON.stringify(editorData));
+      setSaveStatus("local");
+    },
+    [],
+  );
 
   const loadFromLocalStorage = useCallback((): EditorProjectData | null => {
     try {
-      const draft = localStorage.getItem('editor-draft');
-      return draft ? JSON.parse(draft) as EditorProjectData : null;
+      const draft = localStorage.getItem("editor-draft");
+      return draft ? (JSON.parse(draft) as EditorProjectData) : null;
     } catch (error) {
-      console.error('Failed to load from localStorage:', error);
+      console.error("Failed to load from localStorage:", error);
       return null;
     }
   }, []);
@@ -356,10 +409,10 @@ export function Editor({
         edges: currentEdges,
         metadata: {
           lastSaved: new Date().toISOString(),
-          version: '1.0.0',
+          version: "1.0.0",
         },
       };
-      
+
       updateProject.mutate({
         uuid: currentProjectId,
         projectData: editorData,
@@ -371,7 +424,13 @@ export function Editor({
     }
 
     saveQueueRef.current = false;
-  }, [isAuthenticated, currentProjectId, updateProject, saveToLocalStorage, isSaving]);
+  }, [
+    isAuthenticated,
+    currentProjectId,
+    updateProject,
+    saveToLocalStorage,
+    isSaving,
+  ]);
 
   // Debounced save function
   const debouncedSave = useCallback(() => {
@@ -390,7 +449,7 @@ export function Editor({
       onAuthRequired();
       return;
     }
-    
+
     debouncedSave();
   }, [isAuthenticated, onAuthRequired, debouncedSave]);
 
@@ -404,12 +463,12 @@ export function Editor({
     }
 
     if (!currentProjectId) {
-      setExecutionErrors(['No project selected']);
+      setExecutionErrors(["No project selected"]);
       return;
     }
 
     if (nodes.length === 0) {
-      setExecutionErrors(['No nodes to execute']);
+      setExecutionErrors(["No nodes to execute"]);
       return;
     }
 
@@ -419,7 +478,14 @@ export function Editor({
       nodes,
       edges,
     });
-  }, [isAuthenticated, onAuthRequired, currentProjectId, nodes, edges, startExecution]);
+  }, [
+    isAuthenticated,
+    onAuthRequired,
+    currentProjectId,
+    nodes,
+    edges,
+    startExecution,
+  ]);
 
   // Cancel execution function
   const handleCancelExecution = useCallback(() => {
@@ -438,15 +504,22 @@ export function Editor({
 
   // Handle node data changes
   const handleNodeDataChange = useCallback(
-    (nodeId: string, newData: NodeData | ModelSelectionNodeData | TextInputNodeData | TextOutputNodeData) => {
+    (
+      nodeId: string,
+      newData:
+        | NodeData
+        | ModelSelectionNodeData
+        | TextInputNodeData
+        | TextOutputNodeData,
+    ) => {
       setNodes((nds) =>
         nds.map((node) =>
-          node.id === nodeId ? { ...node, data: newData } : node
-        )
+          node.id === nodeId ? { ...node, data: newData } : node,
+        ),
       );
       setHasUnsavedChanges(true);
     },
-    [setNodes]
+    [setNodes],
   );
 
   // Keep refs updated with current nodes and edges
@@ -472,7 +545,7 @@ export function Editor({
         // Project loaded successfully - always clear editor first, then populate with data
         setNodes([]); // Clear existing nodes
         setEdges([]); // Clear existing edges
-        
+
         // Then populate with project data if it exists
         if (project.projectData) {
           const projectData = project.projectData as EditorProjectData;
@@ -486,7 +559,7 @@ export function Editor({
         setIsProjectLoaded(true);
       } else {
         // Project not found or failed to load
-        console.error('Failed to load project');
+        console.error("Failed to load project");
         setNodes([]); // Clear editor on error
         setEdges([]);
         setIsProjectLoaded(true);
@@ -495,17 +568,24 @@ export function Editor({
       // No project selected, mark as loaded
       setIsProjectLoaded(true);
     }
-  }, [project, currentProjectId, isAuthenticated, isLoadingProject, setNodes, setEdges]);
+  }, [
+    project,
+    currentProjectId,
+    isAuthenticated,
+    isLoadingProject,
+    setNodes,
+    setEdges,
+  ]);
 
   // Handle project errors (e.g., project deleted, access denied)
   useEffect(() => {
     if (projectError && currentProjectId) {
-      console.error('Project error:', projectError);
-      
+      console.error("Project error:", projectError);
+
       // If project not found, clear selection and show error
-      if (projectError.data?.code === 'NOT_FOUND') {
+      if (projectError.data?.code === "NOT_FOUND") {
         clearSelection();
-        setSaveStatus('error');
+        setSaveStatus("error");
       }
     }
   }, [projectError, currentProjectId, clearSelection]);
@@ -518,22 +598,35 @@ export function Editor({
       if (localData) {
         setNodes(localData.nodes);
         setEdges(localData.edges);
-        setSaveStatus('local');
+        setSaveStatus("local");
       }
       setIsProjectLoaded(true);
     }
-  }, [currentProjectId, isAuthenticated, isLoaded, loadFromLocalStorage, setNodes, setEdges]);
+  }, [
+    currentProjectId,
+    isAuthenticated,
+    isLoaded,
+    loadFromLocalStorage,
+    setNodes,
+    setEdges,
+  ]);
 
   // Track changes to nodes and edges
-  const handleNodesChange = useCallback((changes: NodeChange<CustomNode>[]) => {
-    onNodesChange(changes);
-    setHasUnsavedChanges(true);
-  }, [onNodesChange]);
+  const handleNodesChange = useCallback(
+    (changes: NodeChange<CustomNode>[]) => {
+      onNodesChange(changes);
+      setHasUnsavedChanges(true);
+    },
+    [onNodesChange],
+  );
 
-  const handleEdgesChange = useCallback((changes: EdgeChange<CustomEdge>[]) => {
-    onEdgesChange(changes);
-    setHasUnsavedChanges(true);
-  }, [onEdgesChange]);
+  const handleEdgesChange = useCallback(
+    (changes: EdgeChange<CustomEdge>[]) => {
+      onEdgesChange(changes);
+      setHasUnsavedChanges(true);
+    },
+    [onEdgesChange],
+  );
 
   // Cleanup effects
   useEffect(() => {
@@ -574,7 +667,7 @@ export function Editor({
 
       // Create the new node based on type
       let newNode: CustomNode;
-      
+
       if (nodeType === "modelSelection") {
         newNode = {
           id,
@@ -622,11 +715,16 @@ export function Editor({
   }));
 
   // Show loading state while project is being loaded
-  if (currentProjectId && isAuthenticated && !isProjectLoaded && isLoadingProject) {
+  if (
+    currentProjectId &&
+    isAuthenticated &&
+    !isProjectLoaded &&
+    isLoadingProject
+  ) {
     return (
-      <div className="absolute top-0 left-0 h-screen w-screen flex items-center justify-center bg-gray-50">
+      <div className="absolute top-0 left-0 flex h-screen w-screen items-center justify-center bg-gray-50">
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
           <span className="text-gray-600">Loading project...</span>
         </div>
       </div>
@@ -637,8 +735,8 @@ export function Editor({
     <div className="absolute top-0 left-0 h-screen w-screen">
       {/* Authentication Banner for unauthenticated users */}
       {!isAuthenticated && isLoaded && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex items-center gap-3 shadow-sm">
+        <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 transform">
+          <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 shadow-sm">
             <div className="text-sm text-blue-800">
               Sign in to save your work permanently
             </div>
@@ -646,7 +744,7 @@ export function Editor({
               size="sm"
               variant="outline"
               onClick={onAuthRequired}
-              className="text-blue-700 border-blue-300 hover:bg-blue-100"
+              className="border-blue-300 text-blue-700 hover:bg-blue-100"
             >
               Sign In
             </Button>
@@ -656,7 +754,7 @@ export function Editor({
 
       {/* Execute Button and Status */}
       <div className="absolute top-20 right-4 z-50 flex items-center gap-3">
-        {executionStatus === 'running' ? (
+        {executionStatus === "running" ? (
           <Button
             onClick={handleCancelExecution}
             variant="destructive"
@@ -669,30 +767,30 @@ export function Editor({
           <Button
             onClick={handleExecuteWorkflow}
             disabled={!isAuthenticated || nodes.length === 0}
-            variant={executionStatus === 'error' ? 'destructive' : 'default'}
+            variant={executionStatus === "error" ? "destructive" : "default"}
             className="flex items-center gap-2"
           >
             <Play className="h-4 w-4" />
             Execute Workflow
           </Button>
         )}
-        
+
         {/* Progress indicator */}
-        {executionStatus === 'running' && executionProgress.total > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+        {executionStatus === "running" && executionProgress.total > 0 && (
+          <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2">
             <div className="text-sm text-blue-800">
               Progress: {executionProgress.completed}/{executionProgress.total}
             </div>
           </div>
         )}
-        
-        {executionStatus === 'error' && executionErrors.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 max-w-md">
-            <div className="flex items-center gap-2 text-red-800 text-sm font-medium mb-1">
+
+        {executionStatus === "error" && executionErrors.length > 0 && (
+          <div className="max-w-md rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+            <div className="mb-1 flex items-center gap-2 text-sm font-medium text-red-800">
               <AlertTriangle className="h-4 w-4" />
               Execution Failed
             </div>
-            <div className="text-red-700 text-xs">
+            <div className="text-xs text-red-700">
               {executionErrors.map((error, index) => (
                 <div key={index}>{error}</div>
               ))}
@@ -705,22 +803,26 @@ export function Editor({
       <div className="absolute bottom-4 left-4 z-50">
         <Badge
           variant={
-            saveStatus === 'saved' ? 'default' :
-            saveStatus === 'saving' ? 'secondary' :
-            saveStatus === 'local' ? 'outline' : 'destructive'
+            saveStatus === "saved"
+              ? "default"
+              : saveStatus === "saving"
+                ? "secondary"
+                : saveStatus === "local"
+                  ? "outline"
+                  : "destructive"
           }
           className="flex items-center gap-1"
         >
-          {saveStatus === 'saving' && (
-            <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          {saveStatus === "saving" && (
+            <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
           )}
-          {saveStatus === 'saved' && '✓'}
-          {saveStatus === 'local' && '💾'}
-          {saveStatus === 'error' && '⚠️'}
-          {saveStatus === 'saved' && 'Saved'}
-          {saveStatus === 'saving' && 'Saving...'}
-          {saveStatus === 'local' && 'Local'}
-          {saveStatus === 'error' && 'Error'}
+          {saveStatus === "saved" && "✓"}
+          {saveStatus === "local" && "💾"}
+          {saveStatus === "error" && "⚠️"}
+          {saveStatus === "saved" && "Saved"}
+          {saveStatus === "saving" && "Saving..."}
+          {saveStatus === "local" && "Local"}
+          {saveStatus === "error" && "Error"}
         </Badge>
       </div>
 
@@ -753,7 +855,11 @@ export function Editor({
           <CommandSeparator />
 
           <CommandGroup heading="Model Nodes">
-            <CommandItem onSelect={() => createNode("modelSelection", "model", "Model Selection")}>
+            <CommandItem
+              onSelect={() =>
+                createNode("modelSelection", "model", "Model Selection")
+              }
+            >
               Model Selection
             </CommandItem>
           </CommandGroup>

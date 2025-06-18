@@ -28,7 +28,7 @@ export class DAGExecutor {
     nodes: CustomNode[],
     edges: CustomEdge[],
     context: ExecutionContext,
-    progressCallback?: ExecutionProgressCallback
+    progressCallback?: ExecutionProgressCallback,
   ) {
     this.graph = parseNodesToDAG(nodes, edges);
     this.context = context;
@@ -56,7 +56,10 @@ export class DAGExecutor {
       for (const nodeId of this.graph.executionOrder) {
         const result = await this.executeNode(nodeId);
         if (!result.success) {
-          return { success: false, errors: [result.error ?? "Unknown execution error"] };
+          return {
+            success: false,
+            errors: [result.error ?? "Unknown execution error"],
+          };
         }
       }
 
@@ -64,7 +67,9 @@ export class DAGExecutor {
     } catch (error) {
       return {
         success: false,
-        errors: [error instanceof Error ? error.message : "Unknown execution error"],
+        errors: [
+          error instanceof Error ? error.message : "Unknown execution error",
+        ],
       };
     } finally {
       this.isExecuting = false;
@@ -133,8 +138,9 @@ export class DAGExecutor {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+
       // Update node with error
       updateNodeInGraph(nodeId, this.graph, "error", undefined, errorMessage);
       this.notifyProgress({
@@ -160,7 +166,7 @@ export class DAGExecutor {
     if (!node) throw new Error(`Node ${nodeId} not found`);
 
     const text = node.data.text;
-    if (!text || typeof text !== 'string' || text.trim() === "") {
+    if (!text || typeof text !== "string" || text.trim() === "") {
       throw new Error("Text input is empty");
     }
 
@@ -237,9 +243,15 @@ export class DAGExecutor {
   /**
    * Get execution results for all nodes
    */
-  getExecutionResults(): Record<string, { status: string; result?: string; error?: string }> {
-    const results: Record<string, { status: string; result?: string; error?: string }> = {};
-    
+  getExecutionResults(): Record<
+    string,
+    { status: string; result?: string; error?: string }
+  > {
+    const results: Record<
+      string,
+      { status: string; result?: string; error?: string }
+    > = {};
+
     for (const [nodeId, node] of this.graph.nodes) {
       results[nodeId] = {
         status: node.status,
@@ -247,7 +259,7 @@ export class DAGExecutor {
         error: node.error,
       };
     }
-    
+
     return results;
   }
 }

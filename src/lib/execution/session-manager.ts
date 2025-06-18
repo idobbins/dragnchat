@@ -6,7 +6,7 @@ export interface ExecutionSession {
   id: string;
   projectId: string;
   userId: string;
-  status: 'running' | 'completed' | 'error' | 'cancelled';
+  status: "running" | "completed" | "error" | "cancelled";
   startTime: Date;
   endTime?: Date;
   currentNodeId?: string;
@@ -22,26 +22,25 @@ class ExecutionSessionManager {
 
   constructor() {
     // Clean up completed sessions every 5 minutes
-    this.cleanupInterval = setInterval(() => {
-      this.cleanupCompletedSessions();
-    }, 5 * 60 * 1000);
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanupCompletedSessions();
+      },
+      5 * 60 * 1000,
+    );
   }
 
   /**
    * Create a new execution session
    */
-  createSession(
-    projectId: string,
-    userId: string,
-    totalNodes: number
-  ): string {
+  createSession(projectId: string, userId: string, totalNodes: number): string {
     const sessionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const session: ExecutionSession = {
       id: sessionId,
       projectId,
       userId,
-      status: 'running',
+      status: "running",
       startTime: new Date(),
       totalNodes,
       completedNodes: 0,
@@ -63,7 +62,10 @@ class ExecutionSessionManager {
   /**
    * Add SSE controller to session
    */
-  addController(sessionId: string, controller: ReadableStreamDefaultController<Uint8Array>): boolean {
+  addController(
+    sessionId: string,
+    controller: ReadableStreamDefaultController<Uint8Array>,
+  ): boolean {
     const session = this.sessions.get(sessionId);
     if (!session) return false;
 
@@ -74,7 +76,10 @@ class ExecutionSessionManager {
   /**
    * Remove SSE controller from session
    */
-  removeController(sessionId: string, controller: ReadableStreamDefaultController<Uint8Array>): void {
+  removeController(
+    sessionId: string,
+    controller: ReadableStreamDefaultController<Uint8Array>,
+  ): void {
     const session = this.sessions.get(sessionId);
     if (session) {
       session.controllers.delete(controller);
@@ -90,22 +95,22 @@ class ExecutionSessionManager {
 
     // Update session state
     session.currentNodeId = progress.nodeId;
-    
-    if (progress.status === 'completed') {
+
+    if (progress.status === "completed") {
       session.completedNodes++;
-    } else if (progress.status === 'error') {
-      session.errors.push(progress.error || 'Unknown error');
+    } else if (progress.status === "error") {
+      session.errors.push(progress.error ?? "Unknown error");
     }
 
     // Create SSE message
     const sseData = {
-      type: 'progress',
+      type: "progress",
       data: {
         ...progress,
         sessionId,
         totalNodes: session.totalNodes,
         completedNodes: session.completedNodes,
-      }
+      },
     };
 
     const message = `data: ${JSON.stringify(sseData)}\n\n`;
@@ -113,34 +118,40 @@ class ExecutionSessionManager {
 
     // Send to all connected clients
     const deadControllers: ReadableStreamDefaultController<Uint8Array>[] = [];
-    
+
     for (const controller of session.controllers) {
       try {
         controller.enqueue(encoder.encode(message));
-      } catch (error) {
+      } catch {
         // Client disconnected, mark for removal
         deadControllers.push(controller);
       }
     }
 
     // Remove dead controllers
-    deadControllers.forEach(controller => session.controllers.delete(controller));
+    deadControllers.forEach((controller) =>
+      session.controllers.delete(controller),
+    );
   }
 
   /**
    * Mark session as completed
    */
-  completeSession(sessionId: string, success: boolean, errors: string[] = []): void {
+  completeSession(
+    sessionId: string,
+    success: boolean,
+    errors: string[] = [],
+  ): void {
     const session = this.sessions.get(sessionId);
     if (!session) return;
 
-    session.status = success ? 'completed' : 'error';
+    session.status = success ? "completed" : "error";
     session.endTime = new Date();
     session.errors.push(...errors);
 
     // Broadcast completion
     const sseData = {
-      type: 'complete',
+      type: "complete",
       data: {
         sessionId,
         success,
@@ -148,7 +159,7 @@ class ExecutionSessionManager {
         totalNodes: session.totalNodes,
         completedNodes: session.completedNodes,
         duration: session.endTime.getTime() - session.startTime.getTime(),
-      }
+      },
     };
 
     const message = `data: ${JSON.stringify(sseData)}\n\n`;
@@ -159,7 +170,7 @@ class ExecutionSessionManager {
       try {
         controller.enqueue(encoder.encode(message));
         controller.close();
-      } catch (error) {
+      } catch {
         // Ignore errors when closing
       }
     }
@@ -173,18 +184,18 @@ class ExecutionSessionManager {
    */
   cancelSession(sessionId: string): boolean {
     const session = this.sessions.get(sessionId);
-    if (!session || session.status !== 'running') return false;
+    if (!session || session.status !== "running") return false;
 
-    session.status = 'cancelled';
+    session.status = "cancelled";
     session.endTime = new Date();
 
     // Broadcast cancellation
     const sseData = {
-      type: 'cancelled',
+      type: "cancelled",
       data: {
         sessionId,
-        message: 'Execution cancelled by user',
-      }
+        message: "Execution cancelled by user",
+      },
     };
 
     const message = `data: ${JSON.stringify(sseData)}\n\n`;
@@ -195,7 +206,7 @@ class ExecutionSessionManager {
       try {
         controller.enqueue(encoder.encode(message));
         controller.close();
-      } catch (error) {
+      } catch {
         // Ignore errors when closing
       }
     }
@@ -209,10 +220,10 @@ class ExecutionSessionManager {
    */
   private cleanupCompletedSessions(): void {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    
+
     for (const [sessionId, session] of this.sessions) {
       if (
-        session.status !== 'running' &&
+        session.status !== "running" &&
         session.endTime &&
         session.endTime < oneHourAgo
       ) {
@@ -226,7 +237,7 @@ class ExecutionSessionManager {
    */
   getUserSessions(userId: string): ExecutionSession[] {
     return Array.from(this.sessions.values()).filter(
-      session => session.userId === userId
+      (session) => session.userId === userId,
     );
   }
 
@@ -237,14 +248,14 @@ class ExecutionSessionManager {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
     }
-    
+
     // Close all active sessions
     for (const session of this.sessions.values()) {
-      if (session.status === 'running') {
+      if (session.status === "running") {
         this.cancelSession(session.id);
       }
     }
-    
+
     this.sessions.clear();
   }
 }
@@ -253,12 +264,12 @@ class ExecutionSessionManager {
 export const executionSessionManager = new ExecutionSessionManager();
 
 // Cleanup on process exit
-process.on('SIGINT', () => {
+process.on("SIGINT", () => {
   executionSessionManager.destroy();
   process.exit(0);
 });
 
-process.on('SIGTERM', () => {
+process.on("SIGTERM", () => {
   executionSessionManager.destroy();
   process.exit(0);
 });

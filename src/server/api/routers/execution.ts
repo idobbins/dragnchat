@@ -49,7 +49,7 @@ export const executionRouter = createTRPCRouter({
         const executionId = executionSessionManager.createSession(
           input.projectId,
           ctx.user.userId,
-          input.nodes.length
+          input.nodes.length,
         );
 
         // Create execution context
@@ -65,32 +65,36 @@ export const executionRouter = createTRPCRouter({
         };
 
         // Start execution in background
-        setImmediate(async () => {
-          try {
-            // Create and execute the DAG
-            const executor = new DAGExecutor(
-              input.nodes as CustomNode[],
-              input.edges as CustomEdge[],
-              executionContext,
-              progressCallback
-            );
+        setImmediate(() => {
+          (async () => {
+            try {
+              // Create and execute the DAG
+              const executor = new DAGExecutor(
+                input.nodes as CustomNode[],
+                input.edges as CustomEdge[],
+                executionContext,
+                progressCallback,
+              );
 
-            const result = await executor.execute();
-            
-            // Complete the session
-            executionSessionManager.completeSession(
-              executionId,
-              result.success,
-              result.errors
-            );
-          } catch (error) {
-            // Handle execution error
-            executionSessionManager.completeSession(
-              executionId,
-              false,
-              [error instanceof Error ? error.message : "Unknown execution error"]
-            );
-          }
+              const result = await executor.execute();
+
+              // Complete the session
+              executionSessionManager.completeSession(
+                executionId,
+                result.success,
+                result.errors,
+              );
+            } catch (error) {
+              // Handle execution error
+              executionSessionManager.completeSession(executionId, false, [
+                error instanceof Error
+                  ? error.message
+                  : "Unknown execution error",
+              ]);
+            }
+          })().catch((error) => {
+            console.error("Background execution error:", error);
+          });
         });
 
         return {
@@ -100,7 +104,8 @@ export const executionRouter = createTRPCRouter({
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : "Unknown execution error",
+          error:
+            error instanceof Error ? error.message : "Unknown execution error",
         };
       }
     }),
@@ -137,11 +142,11 @@ export const executionRouter = createTRPCRouter({
         const executor = new DAGExecutor(
           input.nodes as CustomNode[],
           input.edges as CustomEdge[],
-          executionContext
+          executionContext,
         );
 
         const result = await executor.execute();
-        
+
         if (!result.success) {
           return {
             success: false,
@@ -159,7 +164,9 @@ export const executionRouter = createTRPCRouter({
       } catch (error) {
         return {
           success: false,
-          errors: [error instanceof Error ? error.message : "Unknown execution error"],
+          errors: [
+            error instanceof Error ? error.message : "Unknown execution error",
+          ],
         };
       }
     }),
@@ -180,12 +187,12 @@ export const executionRouter = createTRPCRouter({
         const executor = new DAGExecutor(
           input.nodes as CustomNode[],
           input.edges as CustomEdge[],
-          executionContext
+          executionContext,
         );
 
         const graph = executor.getGraph();
-        const validation = await import("@/lib/execution/utils").then(
-          (utils) => utils.validateExecutionGraph(graph)
+        const validation = await import("@/lib/execution/utils").then((utils) =>
+          utils.validateExecutionGraph(graph),
         );
 
         return {
@@ -229,8 +236,10 @@ export const executionRouter = createTRPCRouter({
         }
 
         // Cancel the execution
-        const cancelled = executionSessionManager.cancelSession(input.executionId);
-        
+        const cancelled = executionSessionManager.cancelSession(
+          input.executionId,
+        );
+
         return {
           success: cancelled,
           error: cancelled ? undefined : "Could not cancel execution",

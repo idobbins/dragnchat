@@ -24,19 +24,19 @@ import { cn } from "@/lib/utils";
 export function ProjectSelector() {
   const { isLoaded, isSignedIn } = useUser();
   const [open, setOpen] = useState(false);
-  
+
   // Simple store for selected project
   const { selectedProject, selectProject } = useSelectedProjectStore();
-  
+
   // tRPC queries and mutations
-  const { 
-    data: projects, 
-    isLoading: isLoadingProjects, 
-    error: projectsError 
+  const {
+    data: projects,
+    isLoading: isLoadingProjects,
+    error: projectsError,
   } = api.projects.getAll.useQuery(undefined, {
     enabled: isSignedIn, // Only fetch when user is signed in
   });
-  
+
   const createProjectMutation = api.projects.create.useMutation({
     onSuccess: (newProject) => {
       // Auto-select the newly created project
@@ -49,9 +49,9 @@ export function ProjectSelector() {
       console.error("Failed to create project:", error);
     },
   });
-  
+
   const trpcUtils = api.useUtils();
-  
+
   // Auto-select most recent project if none selected and projects exist
   useEffect(() => {
     if (!selectedProject && projects && projects.length > 0) {
@@ -62,7 +62,7 @@ export function ProjectSelector() {
       }
     }
   }, [projects, selectedProject, selectProject]);
-  
+
   // Don't render anything while Clerk is loading
   if (!isLoaded) {
     return null;
@@ -82,13 +82,13 @@ export function ProjectSelector() {
   // Handle creating a new project from command input
   const handleCreateProject = async (projectName: string) => {
     if (!projectName.trim()) return;
-    
+
     try {
       await createProjectMutation.mutateAsync({
         name: projectName.trim(),
         projectData: {},
       });
-      
+
       // Invalidate and refetch projects to get the updated list
       await trpcUtils.projects.getAll.invalidate();
     } catch {
@@ -113,7 +113,10 @@ export function ProjectSelector() {
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0" align="start">
         <Command>
-          <CommandInput placeholder="Find or create project..." className="h-9" />
+          <CommandInput
+            placeholder="Find or create project..."
+            className="h-9"
+          />
           <CommandList>
             <CommandEmpty>
               <div className="py-6 text-center text-sm">
@@ -123,8 +126,13 @@ export function ProjectSelector() {
                   size="sm"
                   className="text-xs"
                   onClick={() => {
-                    const input = document.querySelector('[cmdk-input]');
-                    if (input && 'value' in input && typeof input.value === 'string' && input.value.trim()) {
+                    const input = document.querySelector("[cmdk-input]");
+                    if (
+                      input &&
+                      "value" in input &&
+                      typeof input.value === "string" &&
+                      input.value.trim()
+                    ) {
                       void handleCreateProject(input.value);
                     }
                   }}
@@ -135,9 +143,9 @@ export function ProjectSelector() {
                 </Button>
               </div>
             </CommandEmpty>
-            
+
             {projectsError && (
-              <CommandItem disabled className="text-red-600 justify-center">
+              <CommandItem disabled className="justify-center text-red-600">
                 Error: {projectsError.message}
               </CommandItem>
             )}
@@ -162,7 +170,7 @@ export function ProjectSelector() {
                         "mr-2 h-4 w-4",
                         selectedProject?.uuid === project.uuid
                           ? "opacity-100"
-                          : "opacity-0"
+                          : "opacity-0",
                       )}
                     />
                     {project.name}

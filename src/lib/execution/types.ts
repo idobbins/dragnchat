@@ -2,7 +2,7 @@
 
 export interface ExecutionNodeData extends Record<string, unknown> {
   label: string;
-  executionStatus?: 'idle' | 'running' | 'completed' | 'error';
+  executionStatus?: "idle" | "running" | "completed" | "error";
   executionResult?: string;
   executionError?: string;
   executionTimestamp?: string;
@@ -10,18 +10,18 @@ export interface ExecutionNodeData extends Record<string, unknown> {
 
 export interface ExecutionNode {
   id: string;
-  type: 'textInput' | 'modelSelection' | 'textOutput';
+  type: "textInput" | "modelSelection" | "textOutput";
   data: Record<string, unknown>;
   dependencies: string[]; // Node IDs this depends on
-  dependents: string[];   // Node IDs that depend on this
-  status: 'pending' | 'running' | 'completed' | 'error';
+  dependents: string[]; // Node IDs that depend on this
+  status: "pending" | "running" | "completed" | "error";
   result?: string;
   error?: string;
 }
 
 export interface ExecutionGraph {
   nodes: Map<string, ExecutionNode>;
-  edges: Array<{from: string, to: string}>;
+  edges: Array<{ from: string; to: string }>;
   executionOrder: string[];
 }
 
@@ -40,7 +40,7 @@ export interface NodeExecutionResult {
 
 export interface ExecutionProgress {
   nodeId: string;
-  status: 'pending' | 'running' | 'completed' | 'error';
+  status: "pending" | "running" | "completed" | "error";
   result?: string;
   error?: string;
   timestamp: string;

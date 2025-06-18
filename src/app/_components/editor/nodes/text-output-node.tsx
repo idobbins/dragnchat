@@ -11,7 +11,7 @@ export interface TextOutputNodeData extends Record<string, unknown> {
   width?: number;
   height?: number;
   onDataChange?: (id: string, newData: TextOutputNodeData) => void;
-  executionStatus?: 'idle' | 'running' | 'completed' | 'error';
+  executionStatus?: "idle" | "running" | "completed" | "error";
   executionResult?: string;
   executionError?: string;
 }
@@ -32,7 +32,7 @@ export function TextOutputNode({ data, id }: TextOutputNodeProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
   const resizeDimensions = useRef(dimensions);
-  const executionStatus = data.executionStatus ?? 'idle';
+  const executionStatus = data.executionStatus ?? "idle";
 
   // Display text from execution result or fallback to data.text
   const displayText = data.executionResult ?? data.text ?? "";
@@ -40,25 +40,25 @@ export function TextOutputNode({ data, id }: TextOutputNodeProps) {
   // Get border color based on execution status
   const getBorderColor = () => {
     switch (executionStatus) {
-      case 'running':
-        return 'border-blue-500 animate-pulse';
-      case 'completed':
-        return 'border-green-500';
-      case 'error':
-        return 'border-red-500';
+      case "running":
+        return "border-blue-500 animate-pulse";
+      case "completed":
+        return "border-green-500";
+      case "error":
+        return "border-red-500";
       default:
-        return 'border-gray-200';
+        return "border-gray-200";
     }
   };
 
   // Get status icon
   const getStatusIcon = () => {
     switch (executionStatus) {
-      case 'running':
+      case "running":
         return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
-      case 'completed':
+      case "completed":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'error':
+      case "error":
         return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
         return null;
@@ -74,7 +74,7 @@ export function TextOutputNode({ data, id }: TextOutputNodeProps) {
 
     // Disable pointer events on the node to prevent drag conflicts
     if (nodeRef.current) {
-      nodeRef.current.style.pointerEvents = 'none';
+      nodeRef.current.style.pointerEvents = "none";
     }
 
     const startX = e.clientX;
@@ -84,7 +84,7 @@ export function TextOutputNode({ data, id }: TextOutputNodeProps) {
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing.current) return;
-      
+
       e.preventDefault();
       e.stopPropagation();
 
@@ -100,85 +100,85 @@ export function TextOutputNode({ data, id }: TextOutputNodeProps) {
       if (isResizing.current) {
         isResizing.current = false;
         setIsResizingState(false);
-        
+
         // Re-enable pointer events
         if (nodeRef.current) {
-          nodeRef.current.style.pointerEvents = 'auto';
+          nodeRef.current.style.pointerEvents = "auto";
         }
-        
+
         // Update node data with final dimensions
         const newData = {
           ...data,
           width: resizeDimensions.current.width,
           height: resizeDimensions.current.height,
         };
-        
+
         if (data.onDataChange) {
           data.onDataChange(id, newData);
         }
       }
-      
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
   };
 
   return (
-    <div 
+    <div
       ref={nodeRef}
-      className={`bg-white border-2 rounded-lg shadow-sm hover:border-gray-300 transition-colors relative group ${getBorderColor()} ${isResizingState ? 'ring-2 ring-blue-300 ring-opacity-50' : ''}`}
-      style={{ 
-        width: dimensions.width, 
+      className={`group relative rounded-lg border-2 bg-white shadow-sm transition-colors hover:border-gray-300 ${getBorderColor()} ${isResizingState ? "ring-opacity-50 ring-2 ring-blue-300" : ""}`}
+      style={{
+        width: dimensions.width,
         height: dimensions.height,
         minWidth: 250,
         minHeight: 150,
-        userSelect: isResizingState ? 'none' : 'auto',
+        userSelect: isResizingState ? "none" : "auto",
       }}
     >
       {/* Input Handle - Left */}
       <Handle
         type="target"
         position={Position.Left}
-        className="!w-3 !h-3 !bg-blue-500 !border-2 !border-white"
+        className="!h-3 !w-3 !border-2 !border-white !bg-blue-500"
       />
-      
+
       {/* Node Content */}
-      <div className="p-3 h-full flex flex-col">
-        <div className="flex items-center justify-between mb-2">
+      <div className="flex h-full flex-col p-3">
+        <div className="mb-2 flex items-center justify-between">
           <div className="text-xs font-medium text-gray-500">Text Output</div>
           {getStatusIcon()}
         </div>
-        
-        <div className="flex-1 relative overflow-hidden">
+
+        <div className="relative flex-1 overflow-hidden">
           <Textarea
             value={displayText}
             readOnly
             placeholder="Text output will appear here..."
-            className="w-full h-full resize-none border-gray-200 bg-gray-50 cursor-default overflow-y-auto"
-            style={{ 
-              minHeight: '100%',
-              maxHeight: '100%',
+            className="h-full w-full cursor-default resize-none overflow-y-auto border-gray-200 bg-gray-50"
+            style={{
+              minHeight: "100%",
+              maxHeight: "100%",
             }}
           />
         </div>
       </div>
-      
+
       {/* Output Handle - Right */}
       <Handle
         type="source"
         position={Position.Right}
-        className="!w-3 !h-3 !bg-green-500 !border-2 !border-white"
+        className="!h-3 !w-3 !border-2 !border-white !bg-green-500"
       />
-      
+
       {/* Resize Handle */}
-      <div 
-        className="absolute -bottom-1 -right-1 w-5 h-5 cursor-se-resize opacity-60 hover:opacity-100 transition-opacity flex items-center justify-center nodrag"
+      <div
+        className="nodrag absolute -right-1 -bottom-1 flex h-5 w-5 cursor-se-resize items-center justify-center opacity-60 transition-opacity hover:opacity-100"
         onMouseDown={handleResizeMouseDown}
       >
-        <MoveDiagonal2 className="w-3 h-3 text-gray-500" />
+        <MoveDiagonal2 className="h-3 w-3 text-gray-500" />
       </div>
     </div>
   );

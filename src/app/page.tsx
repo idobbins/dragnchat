@@ -17,18 +17,18 @@ export default async function Home() {
         <Editor />
 
         {/* Legal links footer */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 transform text-center">
           <p className="text-muted-foreground text-sm">
             Make sure you agree to our{" "}
-            <a 
-              href="/terms" 
+            <a
+              href="/terms"
               className="text-primary hover:text-primary/80 underline underline-offset-4"
             >
               Terms
-            </a>
-            {" "}and our{" "}
-            <a 
-              href="/privacy" 
+            </a>{" "}
+            and our{" "}
+            <a
+              href="/privacy"
               className="text-primary hover:text-primary/80 underline underline-offset-4"
             >
               Privacy Policy

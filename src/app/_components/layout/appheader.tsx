@@ -14,27 +14,32 @@ interface AppHeaderProps {
   showProjectSelector?: boolean;
 }
 
-export function AppHeader({ isSignedIn, showProjectSelector = true }: AppHeaderProps) {
+export function AppHeader({
+  isSignedIn,
+  showProjectSelector = true,
+}: AppHeaderProps) {
   return (
     <div className="z-10 flex justify-between p-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink href="/" className="text-foreground">
-              <Image 
-                src="/dragnchat.svg" 
-                alt="DragnChat Logo" 
+              <Image
+                src="/dragnchat.svg"
+                alt="DragnChat Logo"
                 width={32}
                 height={32}
-                className="w-8 h-8"
+                className="h-8 w-8"
               />
             </BreadcrumbLink>
           </BreadcrumbItem>
-          {showProjectSelector && <BreadcrumbSeparator className="text-foreground" />}
-          <BreadcrumbItem >
-          <div className="text-foreground text-lg font-semibold hover:cursor-default">
-            {showProjectSelector && <ProjectSelector />}
-          </div>
+          {showProjectSelector && (
+            <BreadcrumbSeparator className="text-foreground" />
+          )}
+          <BreadcrumbItem>
+            <div className="text-foreground text-lg font-semibold hover:cursor-default">
+              {showProjectSelector && <ProjectSelector />}
+            </div>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>

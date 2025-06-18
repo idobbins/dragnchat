@@ -8,13 +8,20 @@ import { projects } from "@/server/db/schema";
 
 // Input validation schemas
 const createProjectSchema = z.object({
-  name: z.string().min(1, "Project name is required").max(255, "Project name too long"),
+  name: z
+    .string()
+    .min(1, "Project name is required")
+    .max(255, "Project name too long"),
   projectData: z.record(z.any()).default({}),
 });
 
 const updateProjectSchema = z.object({
   uuid: z.string().uuid("Invalid project UUID"),
-  name: z.string().min(1, "Project name is required").max(255, "Project name too long").optional(),
+  name: z
+    .string()
+    .min(1, "Project name is required")
+    .max(255, "Project name too long")
+    .optional(),
   projectData: z.record(z.any()).optional(),
 });
 
@@ -56,8 +63,8 @@ export const projectsRouter = createTRPCRouter({
           .where(
             and(
               eq(projects.uuid, input.uuid),
-              eq(projects.userId, ctx.user.userId!)
-            )
+              eq(projects.userId, ctx.user.userId!),
+            ),
           )
           .limit(1);
 
@@ -91,8 +98,8 @@ export const projectsRouter = createTRPCRouter({
           .where(
             and(
               eq(projects.userId, ctx.user.userId!),
-              like(projects.name, `%${input.name}%`)
-            )
+              like(projects.name, `%${input.name}%`),
+            ),
           )
           .orderBy(desc(projects.updatedAt));
 
@@ -140,8 +147,8 @@ export const projectsRouter = createTRPCRouter({
           .where(
             and(
               eq(projects.uuid, input.uuid),
-              eq(projects.userId, ctx.user.userId!)
-            )
+              eq(projects.userId, ctx.user.userId!),
+            ),
           )
           .limit(1);
 
@@ -171,8 +178,8 @@ export const projectsRouter = createTRPCRouter({
           .where(
             and(
               eq(projects.uuid, input.uuid),
-              eq(projects.userId, ctx.user.userId!)
-            )
+              eq(projects.userId, ctx.user.userId!),
+            ),
           )
           .returning();
 
@@ -200,8 +207,8 @@ export const projectsRouter = createTRPCRouter({
           .where(
             and(
               eq(projects.uuid, input.uuid),
-              eq(projects.userId, ctx.user.userId!)
-            )
+              eq(projects.userId, ctx.user.userId!),
+            ),
           )
           .limit(1);
 
@@ -217,8 +224,8 @@ export const projectsRouter = createTRPCRouter({
           .where(
             and(
               eq(projects.uuid, input.uuid),
-              eq(projects.userId, ctx.user.userId!)
-            )
+              eq(projects.userId, ctx.user.userId!),
+            ),
           );
 
         return { success: true, deletedUuid: input.uuid };
@@ -238,8 +245,12 @@ export const projectsRouter = createTRPCRouter({
     .input(
       z.object({
         uuid: z.string().uuid("Invalid project UUID"),
-        newName: z.string().min(1, "New project name is required").max(255, "Project name too long").optional(),
-      })
+        newName: z
+          .string()
+          .min(1, "New project name is required")
+          .max(255, "Project name too long")
+          .optional(),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
@@ -250,8 +261,8 @@ export const projectsRouter = createTRPCRouter({
           .where(
             and(
               eq(projects.uuid, input.uuid),
-              eq(projects.userId, ctx.user.userId!)
-            )
+              eq(projects.userId, ctx.user.userId!),
+            ),
           )
           .limit(1);
 

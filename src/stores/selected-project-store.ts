@@ -22,11 +22,11 @@ export const useSelectedProjectStore = create<SelectedProjectStore>()(
   persist(
     (set) => ({
       selectedProject: null,
-      
+
       selectProject: (project: Project) => {
         set({ selectedProject: project });
       },
-      
+
       clearSelection: () => {
         set({ selectedProject: null });
       },

@@ -88,7 +88,7 @@ function VirtualizedCommandInput({
 
 // Virtual item types
 interface VirtualCommandItem {
-  type: 'group' | 'item';
+  type: "group" | "item";
   id: string;
   groupHeading?: string;
   content?: React.ReactNode;
@@ -122,17 +122,14 @@ function VirtualizedCommandList({
     getScrollElement: () => parentRef.current,
     estimateSize: (index) => {
       const item = items[index];
-      return item?.type === 'group' ? groupHeaderHeight : itemHeight;
+      return item?.type === "group" ? groupHeaderHeight : itemHeight;
     },
     overscan: 5,
   });
 
   if (items.length === 0) {
     return (
-      <div
-        data-slot="command-empty"
-        className="py-6 text-center text-sm"
-      >
+      <div data-slot="command-empty" className="py-6 text-center text-sm">
         {emptyMessage}
       </div>
     );
@@ -142,17 +139,14 @@ function VirtualizedCommandList({
     <div
       ref={parentRef}
       data-slot="command-list"
-      className={cn(
-        "scroll-py-1 overflow-x-hidden overflow-y-auto",
-        className,
-      )}
+      className={cn("scroll-py-1 overflow-x-hidden overflow-y-auto", className)}
       style={{ height: `${height}px` }}
     >
       <div
         style={{
           height: `${virtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative',
+          width: "100%",
+          position: "relative",
         }}
       >
         {virtualizer.getVirtualItems().map((virtualItem) => {
@@ -163,15 +157,15 @@ function VirtualizedCommandList({
             <div
               key={virtualItem.key}
               style={{
-                position: 'absolute',
+                position: "absolute",
                 top: 0,
                 left: 0,
-                width: '100%',
+                width: "100%",
                 height: `${virtualItem.size}px`,
                 transform: `translateY(${virtualItem.start}px)`,
               }}
             >
-              {item.type === 'group' ? (
+              {item.type === "group" ? (
                 <VirtualizedCommandGroup heading={item.groupHeading} />
               ) : (
                 <VirtualizedCommandItem
@@ -221,7 +215,10 @@ function VirtualizedCommandGroup({
       {...props}
     >
       {heading && (
-        <div data-slot="command-group-heading" className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+        <div
+          data-slot="command-group-heading"
+          className="text-muted-foreground px-2 py-1.5 text-xs font-medium"
+        >
           {heading}
         </div>
       )}
