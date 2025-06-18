@@ -43,6 +43,8 @@ DragnChat is a visual chat application that allows you to create conversational 
    ```
    Edit `.env` and configure:
    - `POSTGRES_URL` - Your PostgreSQL connection string
+   - `CLERK_SECRET_KEY` - Your Clerk secret key from [Clerk Dashboard](https://dashboard.clerk.com/)
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Your Clerk publishable key from [Clerk Dashboard](https://dashboard.clerk.com/)
 
 4. **Set up the database**
    ```bash
