@@ -1,82 +1,51 @@
-# DragnChat
+# Welcome to your Convex + Next.js + Clerk app
 
-<div align="center">
-  <img src="public/dragnchat.svg" alt="DragnChat Logo" width="120" height="120">
-</div>
+This is a [Convex](https://convex.dev/) project created with [`pnpm create convex`](https://www.npmjs.com/package/create-convex).
 
-**Open source drag-and-drop chat interface with graph-based context management.**
+After the initial setup (<2 minutes) you'll have a working full-stack app using:
 
-DragnChat is a visual chat application that allows you to create conversational workflows using a node-based editor. Connect text inputs, AI models, and outputs in a flexible graph structure to build complex chat interactions.
+- Convex as your backend (database, server logic)
+- [React](https://react.dev/) as your frontend (web page interactivity)
+- [Next.js](https://nextjs.org/) for optimized web hosting and page routing
+- [Tailwind](https://tailwindcss.com/) for building great looking accessible UI
+- [Clerk](https://clerk.com/) for authentication
 
-## Features
+## Get started
 
-- 🎯 **Visual Node Editor** - Drag and drop interface powered by React Flow
-- 🤖 **AI Model Integration** - Connect to various AI models via OpenRouter
-- 🔗 **Graph-based Context** - Link conversations and maintain context across nodes
-- 🔐 **Authentication** - Secure user management with Clerk
-- 💾 **Project Persistence** - Save and manage multiple chat workflows
+If you just cloned this codebase and didn't use `npm create convex`, run:
 
-## Quick Start
+```
+pnpm install
+pnpm dev
+```
 
-### Prerequisites
+If you're reading this README on GitHub and want to use this template, run:
 
-- Node.js 18+ 
-- pnpm (recommended) or npm
-- PostgreSQL database
+```
+pnpm create convex@latest -- -t nextjs-clerk
+```
 
-### Installation
+Then:
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/dragnchat.git
-   cd dragnchat
-   ```
+1. Open your app. There should be a "Claim your application" button from Clerk in the bottom right of your app.
+2. Follow the steps to claim your application and link it to this app.
+3. Follow step 3 in the [Convex Clerk onboarding guide](https://docs.convex.dev/auth/clerk#get-started) to create a Convex JWT template.
+4. Uncomment the Clerk provider in `convex/auth.config.ts`
+5. Paste the Issuer URL as `CLERK_JWT_ISSUER_DOMAIN` to your dev deployment environment variable settings on the Convex dashboard (see [docs](https://docs.convex.dev/auth/clerk#configuring-dev-and-prod-instances))
 
-2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
+If you want to sync Clerk user data via webhooks, check out this [example repo](https://github.com/thomasballinger/convex-clerk-users-table/).
 
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-   Edit `.env` and configure:
-   - `POSTGRES_URL` - Your PostgreSQL connection string
-   - `CLERK_SECRET_KEY` - Your Clerk secret key from [Clerk Dashboard](https://dashboard.clerk.com/)
-   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Your Clerk publishable key from [Clerk Dashboard](https://dashboard.clerk.com/)
+## Learn more
 
-4. **Set up the database**
-   ```bash
-   pnpm db:push
-   ```
+To learn more about developing your project with Convex, check out:
 
-5. **Start the development server**
-   ```bash
-   pnpm dev
-   ```
+- The [Tour of Convex](https://docs.convex.dev/get-started) for a thorough introduction to Convex principles.
+- The rest of [Convex docs](https://docs.convex.dev/) to learn about all Convex features.
+- [Stack](https://stack.convex.dev/) for in-depth articles on advanced topics.
 
-6. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+## Join the community
 
-## Development
+Join thousands of developers building full-stack apps with Convex:
 
-- `pnpm dev` - Start development server with Turbo
-- `pnpm build` - Build for production
-- `pnpm db:studio` - Open Drizzle Studio for database management
-- `pnpm lint` - Run ESLint
-- `pnpm typecheck` - Run TypeScript checks
-
-## Tech Stack
-
-- **Framework**: Next.js 15 with App Router
-- **UI**: React 19, Tailwind CSS, Radix UI
-- **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: Clerk
-- **State Management**: Zustand, TanStack Query
-- **Graph Editor**: React Flow (@xyflow/react)
-- **AI Integration**: OpenRouter API
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details.
+- Join the [Convex Discord community](https://convex.dev/community) to get help in real-time.
+- Follow [Convex on GitHub](https://github.com/get-convex/), star and contribute to the open-source implementation of Convex.
