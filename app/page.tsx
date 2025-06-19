@@ -1,7 +1,3 @@
 export default function Home() {
-  return (
-    <main className="">
-      DragnChat
-    </main>
-  );
+  return <main className="">DragnChat</main>;
 }
